@@ -370,7 +370,7 @@ function debugConsole() {
             maxHeight: 500,
             width: 400,
             opacity: .65,
-		display: 'none
+		display: 'none'
         }), $el.debugFeed.css({
             background: "black",
             overflowY: "scroll",
