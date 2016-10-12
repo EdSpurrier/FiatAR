@@ -26,7 +26,7 @@
 		</div>
 
 		<div id="expanded-panel">
-			<img class="top-gradient" src="images/top-gradient.png"/>
+			<img class="top-gradient" src="images/top-gradient.png" alt="gradient"/>
 
 			<div id="ctaClose_dc"><b>X</b> <span>Minimise Ad</span></div>
 
@@ -90,15 +90,9 @@
 
 			</div>
 
-			<div id="motion-control-helper">
-				<div id="motion-line"></div>
-				<div id="left-motion-area" class="motion-area"></div>
-				<div id="center-motion-area" class="motion-area"></div>
-				<div id="right-motion-area" class="motion-area"></div>
-			</div>
 
-			<video id="inputVideo" width="150" height="100" autoplay loop>
-			</video>
+
+
 
 			<span id="mute"></span>
 
@@ -114,14 +108,31 @@
 
 
 
-		<ci-ytclosebutton lang="en" theme="gray" shadow="false" id="ytClose_dc">
-		</ci-ytclosebutton>
 	</div>
 
 
 
-	<script src="js/vendor/model_pca_20_svm.js"></script>
-	<script src="js/vendor/clmtrackr.min.js"></script>
+	<div id="motion-control-helper">
+		<div id="motion-line"></div>
+		<div id="left-motion-area" class="motion-area"></div>
+		<div id="center-motion-area" class="motion-area"></div>
+		<div id="right-motion-area" class="motion-area"></div>
+	</div>
+
+
+	<canvas id="inputVideo" width="160" height="120" style="display:none"></canvas>
+	<video id="outputVideo" autoplay="" loop="" width="160" height="120" src=""></video>
+	<canvas id="motion-track-overlay" width="160" height="120"></canvas>
+
+
+	<ci-ytclosebutton lang="en" theme="gray" shadow="false" id="ytClose_dc">
+	</ci-ytclosebutton>
+
+
+	<script src="js/vendor/headtrackr.min.js"></script>
+
+<!--	<script src="js/vendor/model_pca_20_svm.js"></script>
+	<script src="js/vendor/clmtrackr.min.js"></script>-->
 	<script src="js/siteCore.js"></script>
 
 </body>

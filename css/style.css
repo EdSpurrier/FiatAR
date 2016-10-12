@@ -108,7 +108,7 @@
 #ready-1, #ready-2, #ready-3, #go {
   z-index: 23; }
 
-#inputVideo {
+#inputVideo, #motion-track-overlay, #outputVideo {
   z-index: 40; }
 
 #motion-control-helper, .motion-area {
@@ -197,10 +197,10 @@
     left: 50%;
     margin-left: -85px; }
 
-#inputVideo {
+#outputVideo, #motion-track-overlay {
   position: absolute;
   top: 30px;
-  right: 10px;
+  right: 30px;
   -o-transform: scaleX(-1);
   -moz-transform: scaleX(-1);
   -webkit-transform: scaleX(-1);
@@ -208,10 +208,10 @@
   transform: scaleX(-1); }
 
 #motion-control-helper {
-  width: 150px;
-  height: 100px;
+  width: 160px;
+  height: 120px;
   position: absolute;
-  right: 10px;
+  right: 30px;
   top: 30px;
   filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=0);
   opacity: 0;
@@ -220,7 +220,7 @@
     position: absolute;
     top: 0;
     left: 0;
-    height: 100px;
+    height: 120px;
     width: 1px;
     background-color: greenyellow; }
   #motion-control-helper .motion-area {
@@ -228,21 +228,21 @@
     top: 0;
     filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=50);
     opacity: 0.5;
-    height: 100px; }
+    height: 120px; }
   #motion-control-helper #left-motion-area {
     left: 0;
-    height: 100px;
-    width: 60px;
+    height: 120px;
+    width: 65px;
     background: blue; }
   #motion-control-helper #center-motion-area {
-    left: 60px;
-    height: 100px;
+    left: 65px;
+    height: 120px;
     width: 30px;
     background: red; }
   #motion-control-helper #right-motion-area {
-    left: 90px;
-    height: 100px;
-    width: 60px;
+    left: 95px;
+    height: 120px;
+    width: 65px;
     background: blue; }
 
 .view {

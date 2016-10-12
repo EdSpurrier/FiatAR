@@ -9,7 +9,7 @@ function checkCameraStatus() {
         }
         navigator.getUserMedia(videoSelector, function(stream) {
             videoInput.mozCaptureStream ? videoInput.mozSrcObject = stream : videoInput.src = window.URL && window.URL.createObjectURL(stream) || stream, 
-            videoInput.play(), cameraActive = !0, startMotionTracking(), siteCore.apps.viewAnimations.animateInstructionsUpdate("#move-left");
+            startMotionTracking(), cameraActive = !0, siteCore.apps.viewAnimations.animateInstructionsUpdate("#move-left");
         }, function() {
             siteCore.apps.viewAnimations.animateInstructionsUpdate("#how-to-play-keyboard");
         });
@@ -17,50 +17,54 @@ function checkCameraStatus() {
 }
 
 function startMotionTracking() {
-    positionLoop();
-}
-
-function positionLoop() {
-    if (motionTrackingActive) if (currentFrame == debounce) {
-        var getTrack = ctracker.track(videoInput);
-        getTrack ? (siteCore.apps.debugConsole.debugValue("motion-controller-input", getTrack[33][0]), 
-        $motionLine.css({
-            left: 150 - getTrack[33][0]
-        }), getTrack[33][0] > centerRight ? (motionControllerOutputValue = (getTrack[33][0] - 90) / 60, 
-        keyDown || (keyLeft = !0, keyRight = !1), siteCore.apps.debugConsole.debugValue("input-direction", "LEFT"), 
-        $right.css({
+    htracker = new headtrackr.Tracker({
+        calcAngles: !0,
+        ui: !1,
+        headPosition: !1
+    }), htracker.init(videoInput, canvasInput), htracker.start(), document.addEventListener("facetrackingEvent", function(event) {
+        if (overlayContext.clearRect(0, 0, 160, 120), "CS" == event.detection && (overlayContext.translate(event.x, event.y), 
+        overlayContext.rotate(event.angle - Math.PI / 2), overlayContext.strokeStyle = "#00CC00", 
+        overlayContext.strokeRect(-(event.width / 2) >> 0, -(event.height / 2) >> 0, event.width, event.height), 
+        overlayContext.rotate(Math.PI / 2 - event.angle), overlayContext.translate(-event.x, -event.y)), 
+        motionTrackingActive) {
+            var trackedPoint = event.x;
+            siteCore.apps.debugConsole.debugValue("motion-controller-input", trackedPoint), 
+            $motionLine.css({
+                left: trackingWidth - trackedPoint
+            }), trackedPoint > centerRight ? (motionControllerOutputValue = (trackedPoint - centerRight) / centerLeft, 
+            keyDown || (keyLeft = !0, keyRight = !1), siteCore.apps.debugConsole.debugValue("input-direction", "LEFT"), 
+            $right.css({
+                opacity: .5
+            }), $center.css({
+                opacity: .5
+            }), $left.css({
+                opacity: .75
+            }), siteCore.apps.viewAnimations.instructionsTester("left")) : centerLeft > trackedPoint ? (siteCore.apps.debugConsole.debugValue("input-direction", "RIGHT"), 
+            motionControllerOutputValue = (centerLeft - trackedPoint) / centerLeft, keyDown || (keyLeft = !1, 
+            keyRight = !0), $right.css({
+                opacity: .75
+            }), $center.css({
+                opacity: .5
+            }), $left.css({
+                opacity: .5
+            }), siteCore.apps.viewAnimations.instructionsTester("right")) : (siteCore.apps.debugConsole.debugValue("input-direction", "UP"), 
+            $right.css({
+                opacity: .5
+            }), $center.css({
+                opacity: .75
+            }), $left.css({
+                opacity: .5
+            }), motionControllerOutputValue = 0, siteCore.apps.debugConsole.debugValue("game-paused", playerInput), 
+            keyDown || (keyFaster = !0, keyLeft = !1, keyRight = !1), siteCore.apps.viewAnimations.instructionsTester("up")), 
+            siteCore.apps.debugConsole.debugValue("motion-controller-output", motionControllerOutputValue);
+        } else siteCore.apps.debugConsole.debugValue("input-direction", "NO DATA"), $right.css({
             opacity: .5
         }), $center.css({
-            opacity: .5
-        }), $left.css({
-            opacity: .75
-        }), siteCore.apps.viewAnimations.instructionsTester("left")) : getTrack[33][0] < centerLeft ? (siteCore.apps.debugConsole.debugValue("input-direction", "RIGHT"), 
-        motionControllerOutputValue = (60 - getTrack[33][0]) / 60, keyDown || (keyLeft = !1, 
-        keyRight = !0), $right.css({
-            opacity: .75
-        }), $center.css({
-            opacity: .5
-        }), $left.css({
-            opacity: .5
-        }), siteCore.apps.viewAnimations.instructionsTester("right")) : (siteCore.apps.debugConsole.debugValue("input-direction", "UP"), 
-        $right.css({
-            opacity: .5
-        }), $center.css({
             opacity: .75
         }), $left.css({
             opacity: .5
-        }), motionControllerOutputValue = 0, siteCore.apps.debugConsole.debugValue("game-paused", playerInput), 
-        keyDown || (keyFaster = !0, keyLeft = !1, keyRight = !1), siteCore.apps.viewAnimations.instructionsTester("up")), 
-        siteCore.apps.debugConsole.debugValue("motion-controller-output", motionControllerOutputValue)) : (siteCore.apps.debugConsole.debugValue("input-direction", "NO DATA"), 
-        $right.css({
-            opacity: .5
-        }), $center.css({
-            opacity: .75
-        }), $left.css({
-            opacity: .5
-        })), currentFrame = 0;
-    } else currentFrame++;
-    requestAnimationFrame(positionLoop);
+        });
+    });
 }
 
 function update(dt) {
@@ -912,16 +916,15 @@ function viewAnimations() {
     };
 }
 
-var waitTime_frame_1 = 4, waitTime_frame_2 = 4, anim_box_in = .65, anim_box_wait = .55, anim_sheen_move = .2, anim_sheen_wait = .1, anim_fast = .25, anim_fast_x2 = 2 * anim_fast, anim_fast_third = anim_fast / 3, anim_fast_half = anim_fast / 2, anim_fast_2_third = .66 * anim_fast, anim_med = .75, anim_med_x2 = 2 * anim_med, anim_slow = 3, anim_slow_x2 = 2 * anim_slow, bg_in = 9, bg_out = 9, bg_wait = 0, bg_full_length = bg_in + bg_out + bg_wait, raceStarterTime = .75, videoInput = document.getElementById("inputVideo"), ctracker = new clm.tracker();
-
-ctracker.init(pModel), ctracker.start(videoInput), navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia, 
-window.URL = window.URL || window.webkitURL || window.msURL || window.mozURL;
-
-var cameraActive = !1, cameraAvailable = !1, motionTrackingActive = !0;
+var waitTime_frame_1 = 4, waitTime_frame_2 = 4, anim_box_in = .65, anim_box_wait = .55, anim_sheen_move = .2, anim_sheen_wait = .1, anim_fast = .25, anim_fast_x2 = 2 * anim_fast, anim_fast_third = anim_fast / 3, anim_fast_half = anim_fast / 2, anim_fast_2_third = .66 * anim_fast, anim_med = .75, anim_med_x2 = 2 * anim_med, anim_slow = 3, anim_slow_x2 = 2 * anim_slow, bg_in = 9, bg_out = 9, bg_wait = 0, bg_full_length = bg_in + bg_out + bg_wait, raceStarterTime = .75, cameraActive = !1, cameraAvailable = !1, motionTrackingActive = !0;
 
 cameraAvailable = !!navigator.getUserMedia;
 
-var debounce = 0, currentFrame = 0, centerLeft = 60, centerRight = 90, difference = 0, minMoveDistance = 1;
+var videoInput = document.getElementById("outputVideo"), canvasInput = document.getElementById("inputVideo"), canvasOverlay = document.getElementById("motion-track-overlay"), overlayContext = canvasOverlay.getContext("2d"), htracker;
+
+$("#outputVideo").width(160);
+
+var trackingWidth = 160, centerLeft = 65, centerRight = 95, difference = 0, minMoveDistance = 1;
 
 $right = $("#right-motion-area"), $center = $("#center-motion-area"), $left = $("#left-motion-area"), 
 $motionLine = $("#motion-line"), $motionControlHelper = $("#motion-control-helper");
