@@ -1,19 +1,31 @@
-function startVideo() {
-    // start video
-    //videoInput.play();
-    // start tracking
-    //ctracker.start(videoInput);
-    // start loop to draw face
+function checkCameraStatus() {
+    if (cameraAvailable) {
+        var videoSelector = {
+            video: !0
+        };
+        if (window.navigator.appVersion.match(/Chrome\/(.*?) /)) {
+            var chromeVersion = parseInt(window.navigator.appVersion.match(/Chrome\/(\d+)\./)[1], 10);
+            20 > chromeVersion && (videoSelector = "video");
+        }
+        navigator.getUserMedia(videoSelector, function(stream) {
+            videoInput.mozCaptureStream ? videoInput.mozSrcObject = stream : videoInput.src = window.URL && window.URL.createObjectURL(stream) || stream, 
+            videoInput.play(), cameraActive = !0, startMotionTracking(), siteCore.apps.viewAnimations.animateInstructionsUpdate("#move-left");
+        }, function() {
+            siteCore.apps.viewAnimations.animateInstructionsUpdate("#how-to-play-keyboard");
+        });
+    }
+}
+
+function startMotionTracking() {
     positionLoop();
 }
 
 function positionLoop() {
-    if (requestAnimationFrame(positionLoop), currentFrame == debounce) {
+    if (motionTrackingActive) if (currentFrame == debounce) {
         var getTrack = ctracker.track(videoInput);
-        // positions = [[x_0, y_0], [x_1,y_1], ... ]
-        // do something with the positions ...
-        if (getTrack) if (getTrack[33][0] > centerRight) {
-            $right.css({
+        if (getTrack) if (siteCore.apps.debugConsole.debugValue("motion-controller-input", getTrack[33][0]), 
+        getTrack[33][0] > centerRight) {
+            siteCore.apps.debugConsole.debugValue("input-direction", "LEFT"), $right.css({
                 opacity: .5
             }), $center.css({
                 opacity: .5
@@ -27,9 +39,9 @@ function positionLoop() {
             var e = $.Event("keydown", {
                 keyCode: 37
             });
-            $(document).trigger(e);
+            $(document).trigger(e), siteCore.apps.viewAnimations.instructionsTester("left");
         } else if (getTrack[33][0] < centerLeft) {
-            $right.css({
+            siteCore.apps.debugConsole.debugValue("input-direction", "RIGHT"), $right.css({
                 opacity: .75
             }), $center.css({
                 opacity: .5
@@ -43,9 +55,9 @@ function positionLoop() {
             var e = $.Event("keydown", {
                 keyCode: 39
             });
-            $(document).trigger(e);
+            $(document).trigger(e), siteCore.apps.viewAnimations.instructionsTester("right");
         } else {
-            $right.css({
+            siteCore.apps.debugConsole.debugValue("input-direction", "UP"), $right.css({
                 opacity: .5
             }), $center.css({
                 opacity: .75
@@ -63,9 +75,9 @@ function positionLoop() {
             var e = $.Event("keydown", {
                 keyCode: 38
             });
-            $(document).trigger(e);
+            $(document).trigger(e), siteCore.apps.viewAnimations.instructionsTester("up");
         } else {
-            $right.css({
+            siteCore.apps.debugConsole.debugValue("input-direction", "UP"), $right.css({
                 opacity: .5
             }), $center.css({
                 opacity: .75
@@ -87,11 +99,9 @@ function positionLoop() {
         }
         currentFrame = 0;
     } else currentFrame++;
+    requestAnimationFrame(positionLoop);
 }
 
-//=========================================================================
-// UPDATE THE GAME WORLD
-//=========================================================================
 function update(dt) {
     var n, car, carW, sprite, spriteW, playerSegment = findSegment(position + playerZ), playerW = SPRITES.PLAYER_STRAIGHT.w * SPRITES.SCALE, speedPercent = speed / maxSpeed, dx = 2 * dt * speedPercent, startPosition = position;
     if (updateCars(dt, playerSegment, playerW), position = Util.increase(position, dt * speed, trackLength), 
@@ -101,7 +111,6 @@ function update(dt) {
     n = 0; n < playerSegment.sprites.length; n++) if (sprite = playerSegment.sprites[n], 
     spriteW = sprite.source.w * SPRITES.SCALE, Util.overlap(playerX, playerW, sprite.offset + spriteW / 2 * (sprite.offset > 0 ? 1 : -1), spriteW)) {
         speed = maxSpeed / 5, position = Util.increase(playerSegment.p1.world.z, -playerZ, trackLength);
-        // stop in front of sprite (at front of segment)
         break;
     }
     for (n = 0; n < playerSegment.cars.length; n++) if (car = playerSegment.cars[n], 
@@ -121,7 +130,6 @@ function update(dt) {
     updateHud("current_lap_time", formatTime(currentLapTime));
 }
 
-//-------------------------------------------------------------------------
 function updateCars(dt, playerSegment, playerW) {
     var n, car, oldSegment, newSegment;
     for (n = 0; n < cars.length; n++) car = cars[n], oldSegment = findSegment(car.z), 
@@ -133,7 +141,6 @@ function updateCars(dt, playerSegment, playerW) {
 
 function updateCarOffset(car, carSegment, playerSegment, playerW) {
     var i, j, dir, segment, otherCar, otherCarW, lookahead = 20, carW = car.sprite.w * SPRITES.SCALE;
-    // optimization, dont bother steering around other cars when 'out of sight' of the player
     if (carSegment.index - playerSegment.index > drawDistance) return 0;
     for (i = 1; lookahead > i; i++) {
         if (segment = segments[(carSegment.index + i) % segments.length], segment === playerSegment && car.speed > speed && Util.overlap(playerX, playerW, car.offset, carW, 1.2)) return dir = playerX > .5 ? -1 : -.5 > playerX ? 1 : car.offset > playerX ? 1 : -1, 
@@ -142,14 +149,10 @@ function updateCarOffset(car, carSegment, playerSegment, playerW) {
         car.speed > otherCar.speed && Util.overlap(car.offset, carW, otherCar.offset, otherCarW, 1.2)) return dir = otherCar.offset > .5 ? -1 : otherCar.offset < -.5 ? 1 : car.offset > otherCar.offset ? 1 : -1, 
         1 * dir / i * (car.speed - otherCar.speed) / maxSpeed;
     }
-    // if no cars ahead, but I have somehow ended up off road, then steer back on
-    // if no cars ahead, but I have somehow ended up off road, then steer back on
     return car.offset < -.9 ? .1 : car.offset > .9 ? -.1 : 0;
 }
 
-//-------------------------------------------------------------------------
 function updateHud(key, value) {
-    // accessing DOM can be slow, so only do it if value has changed
     hud[key].value !== value && (hud[key].value = value, Dom.set(hud[key].dom, value));
 }
 
@@ -158,33 +161,33 @@ function formatTime(dt) {
     return minutes > 0 ? minutes + "." + (10 > seconds ? "0" : "") + seconds + "." + tenths : seconds + "." + tenths;
 }
 
-//=========================================================================
-// RENDER THE GAME WORLD
-//=========================================================================
 function render() {
-    var baseSegment = findSegment(position), basePercent = Util.percentRemaining(position, segmentLength), playerSegment = findSegment(position + playerZ), playerPercent = Util.percentRemaining(position + playerZ, segmentLength), playerY = Util.interpolate(playerSegment.p1.world.y, playerSegment.p2.world.y, playerPercent), maxy = height;
-    debug && siteCore.apps.debugConsole.debugValue("current-segment", position / segmentLength);
-    var x = 0, dx = -(baseSegment.curve * basePercent);
-    ctx.clearRect(0, 0, width, height), Render.background(ctx, background, width, height, BACKGROUND.SKY, skyOffset, resolution * skySpeed * playerY), 
-    Render.background(ctx, background, width, height, BACKGROUND.HILLS, hillOffset, resolution * hillSpeed * playerY), 
-    Render.background(ctx, background, width, height, BACKGROUND.TREES, treeOffset, resolution * treeSpeed * playerY);
-    var n, i, segment, car, sprite, spriteScale, spriteX, spriteY;
-    for (n = 0; drawDistance > n; n++) segment = segments[(baseSegment.index + n) % segments.length], 
-    segment.looped = segment.index < baseSegment.index, segment.fog = Util.exponentialFog(n / drawDistance, fogDensity), 
-    segment.clip = maxy, Util.project(segment.p1, playerX * roadWidth - x, playerY + cameraHeight, position - (segment.looped ? trackLength : 0), cameraDepth, width, height, roadWidth), 
-    Util.project(segment.p2, playerX * roadWidth - x - dx, playerY + cameraHeight, position - (segment.looped ? trackLength : 0), cameraDepth, width, height, roadWidth), 
-    x += dx, dx += segment.curve, segment.p1.camera.z <= cameraDepth || segment.p2.screen.y >= segment.p1.screen.y || segment.p2.screen.y >= maxy || (Render.segment(ctx, width, lanes, segment.p1.screen.x, segment.p1.screen.y, segment.p1.screen.w, segment.p2.screen.x, segment.p2.screen.y, segment.p2.screen.w, segment.fog, segment.color), 
-    maxy = segment.p1.screen.y);
-    for (n = drawDistance - 1; n > 0; n--) {
-        for (segment = segments[(baseSegment.index + n) % segments.length], i = 0; i < segment.cars.length; i++) car = segment.cars[i], 
-        sprite = car.sprite, spriteScale = Util.interpolate(segment.p1.screen.scale, segment.p2.screen.scale, car.percent), 
-        spriteX = Util.interpolate(segment.p1.screen.x, segment.p2.screen.x, car.percent) + spriteScale * car.offset * roadWidth * width / 2, 
-        spriteY = Util.interpolate(segment.p1.screen.y, segment.p2.screen.y, car.percent), 
-        Render.sprite(ctx, width, height, resolution, roadWidth, sprites, car.sprite, spriteScale, spriteX, spriteY, -.5, -1, segment.clip);
-        for (i = 0; i < segment.sprites.length; i++) sprite = segment.sprites[i], spriteScale = segment.p1.screen.scale, 
-        spriteX = segment.p1.screen.x + spriteScale * sprite.offset * roadWidth * width / 2, 
-        spriteY = segment.p1.screen.y, Render.sprite(ctx, width, height, resolution, roadWidth, sprites, sprite.source, spriteScale, spriteX, spriteY, sprite.offset < 0 ? -1 : 0, -1, segment.clip);
-        segment == playerSegment && Render.player(ctx, width, height, resolution, roadWidth, sprites, speed / maxSpeed, cameraDepth / playerZ, width / 2, height / 2 - cameraDepth / playerZ * Util.interpolate(playerSegment.p1.camera.y, playerSegment.p2.camera.y, playerPercent) * height / 2, speed * (keyLeft ? -1 : keyRight ? 1 : 0), playerSegment.p2.world.y - playerSegment.p1.world.y);
+    if (!gamePaused) {
+        var baseSegment = findSegment(position), basePercent = Util.percentRemaining(position, segmentLength), playerSegment = findSegment(position + playerZ), playerPercent = Util.percentRemaining(position + playerZ, segmentLength), playerY = Util.interpolate(playerSegment.p1.world.y, playerSegment.p2.world.y, playerPercent), maxy = height;
+        debug && (siteCore.apps.debugConsole.debugValue("current-segment", position / segmentLength), 
+        siteCore.apps.debugConsole.debugValue("current-position", position));
+        var x = 0, dx = -(baseSegment.curve * basePercent);
+        ctx.clearRect(0, 0, width, height), Render.background(ctx, background, width, height, BACKGROUND.SKY, skyOffset, resolution * skySpeed * playerY), 
+        Render.background(ctx, background, width, height, BACKGROUND.HILLS, hillOffset, resolution * hillSpeed * playerY), 
+        Render.background(ctx, background, width, height, BACKGROUND.TREES, treeOffset, resolution * treeSpeed * playerY);
+        var n, i, segment, car, sprite, spriteScale, spriteX, spriteY;
+        for (n = 0; drawDistance > n; n++) segment = segments[(baseSegment.index + n) % segments.length], 
+        segment.looped = segment.index < baseSegment.index, segment.fog = Util.exponentialFog(n / drawDistance, fogDensity), 
+        segment.clip = maxy, Util.project(segment.p1, playerX * roadWidth - x, playerY + cameraHeight, position - (segment.looped ? trackLength : 0), cameraDepth, width, height, roadWidth), 
+        Util.project(segment.p2, playerX * roadWidth - x - dx, playerY + cameraHeight, position - (segment.looped ? trackLength : 0), cameraDepth, width, height, roadWidth), 
+        x += dx, dx += segment.curve, segment.p1.camera.z <= cameraDepth || segment.p2.screen.y >= segment.p1.screen.y || segment.p2.screen.y >= maxy || (Render.segment(ctx, width, lanes, segment.p1.screen.x, segment.p1.screen.y, segment.p1.screen.w, segment.p2.screen.x, segment.p2.screen.y, segment.p2.screen.w, segment.fog, segment.color), 
+        maxy = segment.p1.screen.y);
+        for (n = drawDistance - 1; n > 0; n--) {
+            for (segment = segments[(baseSegment.index + n) % segments.length], i = 0; i < segment.cars.length; i++) car = segment.cars[i], 
+            sprite = car.sprite, spriteScale = Util.interpolate(segment.p1.screen.scale, segment.p2.screen.scale, car.percent), 
+            spriteX = Util.interpolate(segment.p1.screen.x, segment.p2.screen.x, car.percent) + spriteScale * car.offset * roadWidth * width / 2, 
+            spriteY = Util.interpolate(segment.p1.screen.y, segment.p2.screen.y, car.percent), 
+            Render.sprite(ctx, width, height, resolution, roadWidth, sprites, car.sprite, spriteScale, spriteX, spriteY, -.5, -1, segment.clip);
+            for (i = 0; i < segment.sprites.length; i++) sprite = segment.sprites[i], spriteScale = segment.p1.screen.scale, 
+            spriteX = segment.p1.screen.x + spriteScale * sprite.offset * roadWidth * width / 2, 
+            spriteY = segment.p1.screen.y, Render.sprite(ctx, width, height, resolution, roadWidth, sprites, sprite.source, spriteScale, spriteX, spriteY, sprite.offset < 0 ? -1 : 0, -1, segment.clip);
+            segment == playerSegment && Render.player(ctx, width, height, resolution, roadWidth, sprites, speed / maxSpeed, cameraDepth / playerZ, width / 2, height / 2 - cameraDepth / playerZ * Util.interpolate(playerSegment.p1.camera.y, playerSegment.p2.camera.y, playerPercent) * height / 2, speed * (keyLeft ? -1 : keyRight ? 1 : 0), playerSegment.p2.world.y - playerSegment.p1.world.y);
+        }
     }
 }
 
@@ -192,9 +195,6 @@ function findSegment(z) {
     return segments[Math.floor(z / segmentLength) % segments.length];
 }
 
-//=========================================================================
-// BUILD ROAD GEOMETRY
-//=========================================================================
 function lastY() {
     return 0 == segments.length ? 0 : segments[segments.length - 1].p2.world.y;
 }
@@ -331,31 +331,41 @@ function reset(options) {
     playerZ = cameraHeight * cameraDepth, resolution = height / 480, (0 == segments.length || options.segmentLength || options.rumbleLength) && resetRoad();
 }
 
-/**
- * siteCore Init
- */
+function playerInputStatus($state) {
+    playerInput = !!$state;
+}
+
+function resetPlayerPosition() {
+    speed = 0, position = 0;
+}
+
+function pauseGame($status) {
+    gamePaused = $status, motionTrackingActive = !$status;
+}
+
+function bug($data) {}
+
 function siteCoreInit() {
     var everythingLoaded = setInterval(function() {
-        /loaded|complete/.test(document.readyState) && clearInterval(everythingLoaded);
+        /loaded|complete/.test(document.readyState) && (clearInterval(everythingLoaded), 
+        siteCore.apps.viewAnimations = new viewAnimations(), siteCore.apps.mastheadUX = new mastheadUX());
     }, 10);
 }
 
-//
-//	MODULE: DEBUG CONSOLE
-//
 function debugConsole() {
-    //  CREATE ELEMENTS ARRAY
     var $el = {}, consoleLine = 0, log = function($content) {
         debug && console.log("debug console: " + $content);
     }, init = function() {
-        log("init()"), buildConsole(), cacheEl(), //	CREATE DEBUG VALUES
-        createValue("frames"), createValue("segments"), createValue("current-segment"), 
-        styleConsole(), debugConsole("init"), document.onkeypress = function(e) {
-            //do the required work
-            100 == e.which && toggleConsole();
+        log("init()"), buildConsole(), cacheEl(), createValue("key-down"), createValue("frames"), 
+        createValue("segments"), createValue("current-segment"), createValue("current-position"), 
+        createValue("motion-controller-input"), createValue("input-direction"), styleConsole(), 
+        debugConsole("init"), document.onkeypress = function(e) {
+            getKeyDown(e), 104 == e.which && toggleConsole();
         };
+    }, getKeyDown = function(e) {
+        siteCore.apps.debugConsole.debugValue("key-down", e.which);
     }, buildConsole = function() {
-        $("body").append("<div id='debug-console'>Press D to toggle in window debug console<div id='debug-feed'></div><div id='debug-static-values'></div></div>");
+        $("body").append("<div id='debug-console'>Press H to toggle in window debug console<div id='debug-feed'></div><div id='debug-static-values'></div></div>");
     }, createValue = function($valueName) {
         $el.debugStaticValues.append("<div id='" + $valueName + "'>" + $valueName + ": <span class='value'></span></div>");
     }, styleConsole = function() {
@@ -369,7 +379,10 @@ function debugConsole() {
             padding: 10,
             maxHeight: 500,
             width: 400,
-            opacity: .65
+            opacity: .65,
+            top: 30,
+            left: 10,
+            display: "none"
         }), $el.debugFeed.css({
             background: "black",
             overflowY: "scroll",
@@ -400,8 +413,6 @@ function debugConsole() {
     }, cacheEl = function() {
         $el.debugConsole = $("#debug-console"), $el.debugFeed = $("#debug-feed"), $el.debugStaticValues = $("#debug-static-values");
     };
-    //  EXTERNAL FUNCTIONS
-    //  INITIALIZE
     return init(), {
         debugConsole: function($data) {
             debugConsole($data);
@@ -412,13 +423,38 @@ function debugConsole() {
     };
 }
 
+function mastheadUX() {
+    var $el = {}, init = function() {
+        cacheEl(), changeView("collapse"), $el.cta.playBtn.on("click", function() {
+            playGame();
+        }), $el.cta.options.on("click", function() {
+            gamePaused ? siteCore.apps.viewAnimations.animateGameOptionsOut() : siteCore.apps.viewAnimations.animateGameOptionsIn();
+        }), $el.cta.restart.on("click", function() {
+            siteCore.apps.viewAnimations.animateRestart();
+        }), $el.cta.endGame.on("click", function() {
+            siteCore.apps.viewAnimations.animateEndGame();
+        });
+    }, changeView = function($viewName) {
+        siteCore.apps.debugConsole.debugConsole("Changing View: " + $viewName), "collapse" == $viewName ? "init" == viewStatus ? (siteCore.apps.viewAnimations.animateStartUp(), 
+        viewStatus = "instructions") : siteCore.apps.viewAnimations.animateCollapse() : "expand" == $viewName ? (siteCore.apps.viewAnimations.animateExpand(), 
+        siteCore.apps.debugConsole.debugConsole("Expanding")) : "expand-complete" == $viewName && ("instructions" == viewStatus ? cameraAvailable ? (siteCore.apps.viewAnimations.animateInstructions("#allow-camera"), 
+        checkCameraStatus()) : siteCore.apps.viewAnimations.animateInstructions("#how-to-play-keyboard") : "play" == viewStatus && siteCore.apps.viewAnimations.animateGameOptionsIn(), 
+        siteCore.apps.debugConsole.debugConsole("Expand-complete"));
+    }, playGame = function() {
+        viewStatus = "play", siteCore.apps.viewAnimations.animateGameStart();
+    }, cacheEl = function() {
+        $el.cta = {}, $el.cta.playBtn = $("#how-to-play-keyboard"), $el.cta.options = $("#hud-options, #resume"), 
+        $el.cta.restart = $("#restart, #end-game-restart"), $el.cta.endGame = $("#end-game");
+    };
+    return init(), {
+        changeView: function($viewName) {
+            changeView($viewName);
+        }
+    };
+}
+
 function enablerInitHandler() {
-    // Start polite loading, or start animation,
-    // load in your image assets, call Enabler methods,
-    // and/or include other Studio modules.
-    //	LOAD SITE CORE
-    siteCoreInit(), //	INIT MASTHEAD
-    InitMH();
+    siteCoreInit(), InitMH();
 }
 
 function clickExpandCTA() {
@@ -431,79 +467,488 @@ function clickCloseCTA() {
 
 function addListeners() {
     btnExpandCTA_dc.addEventListener("click", clickExpandCTA, !1), btnCloseCTA_dc.addEventListener("click", clickCloseCTA, !1), 
-    // Expand Event Listeners
     Enabler.addEventListener(studio.events.StudioEvent.EXPAND_START, expandStart), Enabler.addEventListener(studio.events.StudioEvent.EXPAND_FINISH, expandFinish), 
-    // Collapse Event Listeners
     Enabler.addEventListener(studio.events.StudioEvent.COLLAPSE_START, collapseStart), 
     Enabler.addEventListener(studio.events.StudioEvent.COLLAPSE_FINISH, collapseFinish);
 }
 
 function expandStart() {
-    Enabler.finishExpand(), // Create your animation to expand here.
-    collapsed_panel.style.display = "none", expanded_panel.style.display = "block", 
-    $mainPanel.addClass("expanded");
+    Enabler.finishExpand();
 }
 
 function expandFinish() {
-    panelExpanded = !0;
+    panelExpanded = !0, siteCore.apps.mastheadUX.changeView("expand");
 }
 
 function collapseStart() {
-    Enabler.finishCollapse(), // Create your animation to collapse here.
-    collapsed_panel.style.display = "block", expanded_panel.style.display = "none";
+    Enabler.finishCollapse();
 }
 
 function collapseFinish() {
-    $mainPanel.removeClass("expanded"), panelExpanded = !1;
+    panelExpanded = !1, siteCore.apps.mastheadUX.changeView("collapse");
 }
 
-//This function should be called only after the Enabler.isInitialized
 function InitMH() {
-    /*Offset of left,top and width height, respectively, of the expanded Masthead.
-	 The expansion of a Masthead is only from 970x250 -> 970x500, so this configuration will not change*/
     Enabler.setExpandingPixelOffsets(0, 0, 970, 500), collapsed_panel = document.getElementById("collapsed-panel"), 
     btnExpandCTA_dc = document.getElementById("ctaExpand_dc"), expanded_panel = document.getElementById("expanded-panel"), 
-    btnCloseCTA_dc = document.getElementById("ctaClose_dc"), addListeners(), document.getElementById("abarth-logo").addEventListener("click", bgExitHandler, !1);
+    btnCloseCTA_dc = document.getElementById("ctaClose_dc"), addListeners(), document.getElementById("abarth-logo").addEventListener("click", bgExitHandler, !1), 
+    document.getElementById("abarth-logo").addEventListener("click", bgExitHandler, !1);
 }
 
 function bgExitHandler(e) {
-    Enabler.exit("Abarth Logo Exit"), /* If you have videos, make sure to stop all of them. Check the YouTube Player implementation section of this guide. */
-    /* If the masthead is expandable, make sure that it collapses using: */
-    panelExpanded && Enabler.requestCollapse();
+    Enabler.exit("Abarth Logo Exit"), panelExpanded && Enabler.requestCollapse();
 }
 
-var videoInput = document.getElementById("inputVideo"), ctracker = new clm.tracker();
-
-// check for camerasupport
-if (ctracker.init(pModel), ctracker.start(videoInput), navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia, 
-window.URL = window.URL || window.webkitURL || window.msURL || window.mozURL, navigator.getUserMedia) {
-    // set up stream
-    var videoSelector = {
-        video: !0
+function viewAnimations() {
+    var $el = {}, timeLine = new TimelineLite(), init = function() {
+        cacheEl();
+    }, cacheEl = function() {
+        $el.collapsed = {}, $el.collapsed.panel = $("#collapsed-panel"), $el.collapsed.tagLine = $("#tag-line"), 
+        $el.collapsed.description = $("#description"), $el.collapsed.button = $("#ctaExpand_dc"), 
+        $el.expanded = {}, $el.expanded.panel = $("#expanded-panel"), $el.expanded.game = $("#view-game"), 
+        $el.expanded.gameHUD = $("#game-hud"), $el.expanded.gameHUDelements = $(".hud-item"), 
+        $el.expanded.instructions = {}, $el.expanded.instructions.view = $("#view-instructions"), 
+        $el.expanded.instructions.header = $("#how-to-play"), $el.expanded.instructions.instruction = $(".instructions"), 
+        $el.expanded.instructions.cars = $(".car"), $el.expanded.instructions.carStraight = $("#car-straight"), 
+        $el.expanded.instructions.carLeft = $("#car-left"), $el.expanded.instructions.carRight = $("#car-right"), 
+        $el.expanded.instructions.gameOptionsHeader = $("#options-header"), $el.expanded.instructions.gameOptions = $("#options-screen"), 
+        $el.expanded.instructions.gameOptionsCta = $(".options-cta"), $el.expanded.endGame = {}, 
+        $el.expanded.endGame.view = $("#view-end-game"), $el.expanded.endGame.bg = $("#end-game-bg"), 
+        $el.expanded.endGame.header = $("#end-game-header"), $el.expanded.endGame.logo = $("#end-game-logo"), 
+        $el.expanded.endGame.cta = $("#end-game-cta"), $el.expanded.endGame.restart = $("#end-game-restart"), 
+        $el.game = {}, $el.game.allRaceStarter = $(".race-starter"), $el.game.raceStarter = $("#race-starter"), 
+        $el.game.ready = $("#ready"), $el.game.ready1 = $("#ready-1"), $el.game.ready2 = $("#ready-2"), 
+        $el.game.ready3 = $("#ready-3"), $el.game.go = $("#go"), $el.abarthLogo = $("#abarth-logo"), 
+        $el.mainPanel = $("#main-panel"), $el.motionControllerVideo = $("#inputVideo");
+    }, setupCollapse = function() {
+        $el.collapsed.panel.css({
+            display: "block"
+        }), $el.expanded.panel.css({
+            display: "none"
+        }), $el.collapsed.panel.css({
+            opacity: 0
+        }), $el.collapsed.tagLine.css({
+            opacity: 0
+        }), $el.collapsed.description.css({
+            opacity: 0
+        }), $el.collapsed.button.css({
+            opacity: 0
+        }), $el.abarthLogo.css({
+            opacity: 0
+        }), $el.motionControllerVideo.css({
+            opacity: 0
+        });
+    }, setupExpanded = function() {
+        $el.collapsed.panel.css({
+            display: "none"
+        }), $el.expanded.panel.css({
+            display: "block",
+            opacity: 1
+        }), $el.expanded.gameHUDelements.css({
+            display: "none",
+            opacity: 0
+        }), $el.expanded.gameHUD.css({
+            opacity: 0
+        }), $el.expanded.instructions.view.css({
+            display: "block",
+            opacity: 1
+        }), $el.expanded.instructions.header.css({
+            opacity: 0
+        }), $el.expanded.instructions.instruction.css({
+            display: "none",
+            opacity: 0
+        }), $el.expanded.instructions.cars.css({
+            opacity: 0
+        });
+    }, setupGame = function() {
+        $el.game.allRaceStarter.css({
+            opacity: 0
+        });
+    }, setupGameOptionsIn = function() {
+        $el.expanded.instructions.instruction.css({
+            display: "none",
+            opacity: 0
+        }), $el.expanded.instructions.view.css({
+            display: "block"
+        }), $el.expanded.game.css({
+            display: "block",
+            opacity: 1
+        }), $el.expanded.instructions.gameOptionsCta.css({
+            opacity: 0
+        });
+    }, setupGameOptionsOut = function() {
+        $el.game.allRaceStarter.css({
+            opacity: 0
+        });
+    }, setupEndGame = function() {
+        $el.expanded.endGame.view.css({
+            display: "block",
+            opacity: 1
+        }), $el.expanded.endGame.bg.css({
+            opacity: 0
+        }), $el.expanded.endGame.header.css({
+            opacity: 0
+        }), $el.expanded.endGame.cta.css({
+            opacity: 0
+        }), $el.expanded.endGame.restart.css({
+            opacity: 0
+        });
+    }, animateExpand = function() {
+        timeLine.clear(), timeLine.to($el.collapsed.tagLine, anim_fast, {
+            opacity: 0,
+            scale: 1.1
+        }), timeLine.to($el.collapsed.description, anim_fast, {
+            opacity: 0,
+            scale: 1.1
+        }), timeLine.to($el.collapsed.button, anim_fast, {
+            opacity: 0,
+            scale: 1.1
+        }), timeLine.to($el.collapsed.panel, anim_fast_x2, {
+            opacity: 0,
+            scale: 1.3
+        }), timeLine.to($el.mainPanel, anim_fast_x2, {
+            height: 500,
+            onComplete: function() {
+                setupExpanded(), siteCore.apps.mastheadUX.changeView("expand-complete");
+            }
+        });
+    }, instructionsAnimatedIn = !1, motionInstructionsActive = !1, instructionsFinished = !1, motionInstructionsLeft = !0, animateInstructions = function($element) {
+        timeLine.clear(), $el.expanded.game.css({
+            display: "block"
+        });
+        var instructionContent = $($element);
+        instructionContent.css({
+            display: "block"
+        }), timeLine.fromTo($el.expanded.game, anim_med_x2, {
+            opacity: 0,
+            scale: 1.5,
+            y: "-15%"
+        }, {
+            opacity: 1,
+            scale: 1.3,
+            y: "0%"
+        }), timeLine.fromTo($el.expanded.instructions.header, anim_fast_x2, {
+            opacity: 0,
+            scale: 1.5
+        }, {
+            opacity: 1,
+            scale: 1
+        }, "-=" + anim_med), timeLine.fromTo(instructionContent, anim_fast_x2, {
+            opacity: 0
+        }, {
+            opacity: 1
+        }, "-=" + anim_fast), timeLine.fromTo($el.expanded.instructions.carStraight, anim_fast_x2, {
+            opacity: 0
+        }, {
+            opacity: 1,
+            onComplete: function() {
+                instructionsAnimatedIn = !0, "#move-left" == $element && (timeLine.to($el.motionControllerVideo, anim_fast, {
+                    opacity: 1
+                }), motionInstructionsActive = !0);
+            }
+        }, "-=" + anim_fast);
+    }, animateInstructionsUpdate = function($element) {
+        if (!instructionsAnimatedIn) return void animateInstructions($element);
+        timeLine.clear();
+        var instructionContent = $($element);
+        instructionContent.css({
+            display: "block"
+        }), timeLine.to($el.expanded.instructions.instruction, anim_fast, {
+            opacity: 0
+        }), timeLine.fromTo(instructionContent, anim_fast, {
+            opacity: 0
+        }, {
+            opacity: 1,
+            onComplete: function() {
+                "#move-left" == $element && (timeLine.to($el.motionControllerVideo, anim_fast, {
+                    opacity: 1
+                }), motionInstructionsActive = !0);
+            }
+        });
+    }, instructionsTester = function($direction) {
+        !instructionsFinished && motionInstructionsActive && ("up" == $direction ? ($el.expanded.instructions.carStraight.css({
+            opacity: 1
+        }), $el.expanded.instructions.carLeft.css({
+            opacity: 0
+        }), $el.expanded.instructions.carRight.css({
+            opacity: 0
+        })) : "left" == $direction ? ($el.expanded.instructions.carStraight.css({
+            opacity: 0
+        }), $el.expanded.instructions.carLeft.css({
+            opacity: 1
+        }), $el.expanded.instructions.carRight.css({
+            opacity: 0
+        }), motionInstructionsLeft && (motionInstructionsLeft = !1, animateInstructionsUpdate("#move-right"))) : "right" == $direction && ($el.expanded.instructions.carStraight.css({
+            opacity: 0
+        }), $el.expanded.instructions.carLeft.css({
+            opacity: 0
+        }), $el.expanded.instructions.carRight.css({
+            opacity: 1
+        }), motionInstructionsLeft || (instructionsFinished = !0, motionInstructionsActive = !1, 
+        animateGameStart())));
+    }, animateGameOptionsIn = function() {
+        pauseGame(!0), setupGameOptionsIn(), timeLine.clear(), $el.expanded.instructions.gameOptions.css({
+            display: "block"
+        }), timeLine.to([ $el.expanded.gameHUD, $el.motionControllerVideo ], anim_fast_x2, {
+            opacity: 0
+        }), timeLine.to($el.expanded.game, anim_fast_x2, {
+            scale: 1.3,
+            y: "0%"
+        }, "-=" + anim_fast_x2), timeLine.to($el.expanded.instructions.view, anim_fast_x2, {
+            opacity: 1
+        }, "-=" + anim_fast_x2), timeLine.to($el.expanded.instructions.gameOptionsHeader, anim_fast_x2, {
+            opacity: 1
+        }, "-=" + anim_fast), timeLine.to($el.expanded.instructions.gameOptions, anim_fast_x2, {
+            opacity: 1
+        }, "-=" + anim_fast), timeLine.to($el.expanded.instructions.gameOptionsCta, anim_fast_x2, {
+            opacity: 1
+        }, "-=" + anim_fast);
+    }, animateGameOptionsOut = function() {
+        setupGameOptionsOut(), timeLine.clear(), timeLine.to([ $el.expanded.instructions.gameOptionsHeader, $el.expanded.instructions.gameOptionsCta, $el.expanded.instructions.gameOptions ], anim_fast, {
+            opacity: 0,
+            onComplete: function() {
+                pauseGame(!1);
+            }
+        }), timeLine.to($el.expanded.instructions.view, anim_fast_x2, {
+            opacity: 0,
+            onComplete: function() {
+                $el.expanded.instructions.view.css({
+                    display: "none"
+                }), $el.expanded.gameHUDelements.css({
+                    display: "block"
+                });
+            }
+        }), timeLine.to([ $el.expanded.gameHUD, $el.expanded.gameHUDelements ], anim_fast_x2, {
+            opacity: 1,
+            scale: 1
+        }, "-=" + anim_fast_x2), timeLine.to($el.motionControllerVideo, anim_fast_x2, {
+            opacity: 1
+        }, "-=" + anim_fast_x2), timeLine.to($el.expanded.game, anim_fast_x2, {
+            scale: 1,
+            y: "0%"
+        }, "-=" + anim_fast_x2), raceStarted || raceStartLights();
+    }, animateGameStart = function() {
+        viewStatus = "play", timeLine.clear(), setupGame(), resetPlayerPosition(), timeLine.to([ $el.expanded.instructions.instruction, $el.expanded.instructions.cars, $el.expanded.instructions.header ], anim_fast_x2, {
+            opacity: 0,
+            onComplete: function() {
+                $el.expanded.instructions.view.css({
+                    display: "none"
+                });
+            }
+        }), timeLine.to($el.expanded.game, anim_fast_x2, {
+            scale: 1
+        }, "-=" + anim_med), timeLine.to([ $el.expanded.gameHUD, $el.game.raceStarter ], anim_fast_x2, {
+            opacity: 1
+        }, "-=" + anim_fast), timeLine.fromTo($el.expanded.gameHUDelements, anim_fast, {
+            opacity: 0,
+            scale: 1.5
+        }, {
+            opacity: 1,
+            scale: 1
+        }), raceStarted || raceStartLights();
+    }, raceStartLights = function() {
+        timeLine.to($el.game.ready, anim_fast, {
+            opacity: 1
+        }, "+=" + anim_fast_x2), timeLine.to($el.game.ready1, anim_fast, {
+            opacity: 1
+        }, "+=" + raceStarterTime), timeLine.to($el.game.ready2, anim_fast, {
+            opacity: 1
+        }, "+=" + raceStarterTime), timeLine.to($el.game.ready3, anim_fast, {
+            opacity: 1
+        }, "+=" + raceStarterTime), timeLine.to($el.game.go, anim_fast, {
+            opacity: 1,
+            onComplete: function() {
+                $el.expanded.gameHUDelements.css({
+                    display: "block"
+                }), raceStarted = !0, playerInputStatus(!0);
+            }
+        }, "+=" + raceStarterTime), timeLine.to($el.game.allRaceStarter, anim_fast_x2, {
+            opacity: 0,
+            scale: 1.2
+        }, "+=" + anim_med_x2);
+    }, animateRestart = function() {
+        playerInputStatus(!1), raceStarted = !1, gamePaused = !1, timeLine.clear(), timeLine.to($el.expanded.game, anim_fast_x2, {
+            scale: 1.5,
+            opacity: 0,
+            onComplete: function() {
+                resetPlayerPosition();
+            }
+        }), timeLine.to([ $el.expanded.endGame.view, $el.expanded.instructions.instruction, $el.expanded.instructions.cars, $el.expanded.instructions.header, $el.expanded.instructions.gameOptionsHeader ], anim_fast_x2, {
+            opacity: 0,
+            onComplete: function() {
+                $el.expanded.instructions.view.css({
+                    display: "none"
+                }), $el.expanded.endGame.view.css({
+                    display: "none"
+                });
+            }
+        }, "-=" + anim_fast_x2), setupGame(), timeLine.to($el.abarthLogo, anim_fast_x2, {
+            scale: .7,
+            bottom: "0px",
+            right: "0px"
+        }), timeLine.to($el.expanded.game, anim_fast_x2, {
+            scale: 1,
+            opacity: 1
+        }), timeLine.to([ $el.expanded.gameHUD, $el.game.raceStarter ], anim_fast_x2, {
+            opacity: 1
+        }, "-=" + anim_fast), timeLine.fromTo($el.expanded.gameHUDelements, anim_fast, {
+            opacity: 0,
+            scale: 1.5
+        }, {
+            opacity: 1,
+            scale: 1
+        }), raceStartLights();
+    }, animateCollapse = function() {
+        "play" == viewStatus && pauseGame(!0), timeLine.clear(), timeLine.to($el.expanded.game, anim_fast, {
+            opacity: 0,
+            scale: 1.3,
+            y: "0%"
+        }), timeLine.to([ $el.motionControllerVideo, $el.abarthLogo, $el.expanded.instructions.instruction, $el.expanded.instructions.header, $el.expanded.instructions.gameOptionsHeader ], anim_fast, {
+            opacity: 0
+        }, "-=" + anim_fast), timeLine.to($el.mainPanel, anim_fast_x2, {
+            height: 250,
+            onComplete: function() {
+                animateStartUp();
+            }
+        });
+    }, animateStartUp = function() {
+        siteCore.apps.debugConsole.debugConsole("Start Up Animation"), setupCollapse(), 
+        timeLine.clear();
+        timeLine.fromTo($el.collapsed.panel, anim_med_x2, {
+            opacity: 0,
+            scale: 1.3
+        }, {
+            opacity: 1,
+            scale: 1
+        }), $el.abarthLogo.css({
+            bottom: "0px",
+            right: "0px"
+        }), timeLine.fromTo($el.abarthLogo, anim_fast_x2, {
+            opacity: 0,
+            scale: .5
+        }, {
+            opacity: 1,
+            scale: .6
+        }, "-=" + anim_fast_x2), timeLine.fromTo($el.collapsed.tagLine, anim_fast_x2, {
+            opacity: 0,
+            scale: .9
+        }, {
+            opacity: 1,
+            scale: 1
+        }), timeLine.fromTo($el.collapsed.description, anim_fast_x2, {
+            opacity: 0,
+            scale: .9
+        }, {
+            opacity: 1,
+            scale: 1
+        }), timeLine.fromTo($el.collapsed.button, anim_fast_x2, {
+            opacity: 0,
+            scale: .9
+        }, {
+            opacity: 1,
+            scale: 1
+        });
+    }, animateEndGame = function() {
+        playerInputStatus(!1), raceStarted = !1, gamePaused = !1, timeLine.clear(), setupEndGame(), 
+        timeLine.to($el.expanded.game, anim_fast_x2, {
+            scale: 1.5,
+            opacity: 0,
+            onComplete: function() {
+                resetPlayerPosition();
+            }
+        }), timeLine.to([ $el.abarthLogo, $el.expanded.instructions.instruction, $el.expanded.instructions.cars, $el.expanded.instructions.header, $el.expanded.instructions.gameOptionsHeader ], anim_fast_x2, {
+            opacity: 0,
+            onComplete: function() {
+                $el.expanded.instructions.view.css({
+                    display: "none"
+                });
+            }
+        }, "-=" + anim_fast_x2), timeLine.fromTo($el.expanded.endGame.bg, anim_med_x2, {
+            opacity: 0,
+            scale: 1.3
+        }, {
+            opacity: 1,
+            scale: 1
+        }), timeLine.fromTo($el.expanded.endGame.header, anim_fast_x2, {
+            opacity: 0,
+            scale: .9
+        }, {
+            opacity: 1,
+            scale: 1
+        }, "-=" + anim_fast), timeLine.fromTo($el.expanded.endGame.cta, anim_fast_x2, {
+            opacity: 0,
+            scale: .9
+        }, {
+            opacity: 1,
+            scale: 1
+        }, "-=" + anim_fast), $el.abarthLogo.css({
+            bottom: "12px",
+            right: "20px"
+        }), timeLine.fromTo($el.abarthLogo, anim_fast_x2, {
+            opacity: 0,
+            scale: .9
+        }, {
+            opacity: 1,
+            scale: 1
+        }, "-=" + anim_fast), timeLine.fromTo($el.expanded.endGame.restart, anim_fast_x2, {
+            opacity: 0,
+            scale: .9
+        }, {
+            opacity: 1,
+            scale: 1
+        }, "-=" + anim_fast);
     };
-    if (window.navigator.appVersion.match(/Chrome\/(.*?) /)) {
-        var chromeVersion = parseInt(window.navigator.appVersion.match(/Chrome\/(\d+)\./)[1], 10);
-        20 > chromeVersion && (videoSelector = "video");
-    }
-    navigator.getUserMedia(videoSelector, function(stream) {
-        videoInput.mozCaptureStream ? videoInput.mozSrcObject = stream : videoInput.src = window.URL && window.URL.createObjectURL(stream) || stream, 
-        videoInput.play();
-    }, function() {
-        insertAltVideo(videoInput), document.getElementById("gum").className = "hide", document.getElementById("nogum").className = "nohide", 
-        alert("There was some problem trying to fetch video from your webcam, using a fallback video instead.");
-    });
-} else insertAltVideo(videoInput), document.getElementById("gum").className = "hide", 
-document.getElementById("nogum").className = "nohide", alert("Your browser does not seem to support getUserMedia, using a fallback video instead.");
+    return init(), {
+        animateCollapse: function() {
+            animateCollapse();
+        },
+        animateExpand: function() {
+            animateExpand();
+        },
+        animateStartUp: function() {
+            animateStartUp();
+        },
+        animateInstructions: function($element) {
+            animateInstructions($element);
+        },
+        animateGameStart: function() {
+            animateGameStart();
+        },
+        animateInstructionsUpdate: function($element) {
+            animateInstructionsUpdate($element);
+        },
+        instructionsTester: function($direction) {
+            instructionsTester($direction);
+        },
+        animateGameOptionsIn: function() {
+            animateGameOptionsIn();
+        },
+        animateGameOptionsOut: function() {
+            animateGameOptionsOut();
+        },
+        animateRestart: function() {
+            animateRestart();
+        },
+        animateEndGame: function() {
+            animateEndGame();
+        }
+    };
+}
+
+var waitTime_frame_1 = 4, waitTime_frame_2 = 4, anim_box_in = .65, anim_box_wait = .55, anim_sheen_move = .2, anim_sheen_wait = .1, anim_fast = .25, anim_fast_x2 = 2 * anim_fast, anim_fast_third = anim_fast / 3, anim_fast_half = anim_fast / 2, anim_fast_2_third = .66 * anim_fast, anim_med = .75, anim_med_x2 = 2 * anim_med, anim_slow = 3, anim_slow_x2 = 2 * anim_slow, bg_in = 9, bg_out = 9, bg_wait = 0, bg_full_length = bg_in + bg_out + bg_wait, raceStarterTime = .75, videoInput = document.getElementById("inputVideo"), ctracker = new clm.tracker();
+
+ctracker.init(pModel), ctracker.start(videoInput), navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia, 
+window.URL = window.URL || window.webkitURL || window.msURL || window.mozURL;
+
+var cameraActive = !1, cameraAvailable = !1, motionTrackingActive = !0;
+
+cameraAvailable = !!navigator.getUserMedia;
 
 var debounce = 0, currentFrame = 0, centerLeft = 60, centerRight = 90, difference = 0, minMoveDistance = 1;
 
-//	FEEDBACK
 $right = $("#right-motion-area"), $center = $("#center-motion-area"), $left = $("#left-motion-area"), 
-startVideo();
+$motionControlHelper = $("#motion-control-helper");
 
-/**
- * @author mrdoob / http://mrdoob.com/
- */
 var Stats = function() {
     var startTime = Date.now(), prevTime = startTime, ms = 0, msMin = 1e3, msMax = 0, fps = 0, fpsMin = 1e3, fpsMax = 0, frames = 0, mode = 0, container = document.createElement("div");
     container.id = "stats", container.addEventListener("mousedown", function(event) {
@@ -599,7 +1044,6 @@ var Stats = function() {
         on = "undefined" == typeof on ? 0 > n : on, on && 0 > n ? classes.push(name) : !on && n >= 0 && classes.splice(n, 1), 
         ele.className = classes.join(" ");
     },
-    //storage: window.localStorage || {}
     storage: {}
 }, Util = {
     timestamp: function() {
@@ -650,8 +1094,7 @@ var Stats = function() {
         return 1 / Math.pow(Math.E, distance * distance * density);
     },
     increase: function(start, increment, max) {
-        for (// with looping
-        var result = start + increment; result >= max; ) result -= max;
+        for (var result = start + increment; result >= max; ) result -= max;
         for (;0 > result; ) result += max;
         return result;
     },
@@ -667,42 +1110,29 @@ var Stats = function() {
     }
 };
 
-//=========================================================================
-// POLYFILL for requestAnimationFrame
-//=========================================================================
-window.requestAnimationFrame || (// http://paulirish.com/2011/requestanimationframe-for-smart-animating/
-window.requestAnimationFrame = window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || function(callback, element) {
+window.requestAnimationFrame || (window.requestAnimationFrame = window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || function(callback, element) {
     window.setTimeout(callback, 1e3 / 60);
 });
 
-//=========================================================================
-// GAME LOOP helpers
-//=========================================================================
 var Game = {
-    // a modified version of the game loop from my previous boulderdash game - see http://codeincomplete.com/posts/2011/10/25/javascript_boulderdash/#gameloop
     run: function(options) {
         Game.loadImages(options.images, function(images) {
-            // stats instance is provided by caller
             function frame() {
-                for (firstFrame && (debug && $("#fps").appendTo("#debug-console"), firstFrame = !1), 
-                now = Util.timestamp(), dt = Math.min(1, (now - last) / 1e3), // using requestAnimationFrame have to be able to handle large delta's caused when it 'hibernates' in a background or non-visible tab
-                gdt += dt; gdt > step; ) gdt -= step, update(step);
-                render(), //	DEBUGGING
-                debug && (siteCore.apps.debugConsole.debugValue("frames", frameNo++), siteCore.apps.debugConsole.debugValue("segments", segments.length), 
-                stats.update()), last = now, requestAnimationFrame(frame, canvas);
+                if (!gamePaused) {
+                    for (firstFrame && (debug && $("#fps").appendTo("#debug-console"), firstFrame = !1), 
+                    now = Util.timestamp(), dt = Math.min(1, (now - last) / 1e3), gdt += dt; gdt > step; ) gdt -= step, 
+                    update(step);
+                    render(), debug && (siteCore.apps.debugConsole.debugValue("frames", frameNo++), 
+                    siteCore.apps.debugConsole.debugValue("segments", segments.length), stats.update()), 
+                    last = now;
+                }
+                requestAnimationFrame(frame, canvas);
             }
-            options.ready(images), // tell caller to initialize itself because images are loaded and we're ready to rumble
-            Game.setKeyListener(options.keys);
-            var canvas = options.canvas, // canvas render target is provided by caller
-            update = options.update, // method to update game logic is provided by caller
-            render = options.render, // method to render the game is provided by caller
-            step = options.step, // fixed frame step (1/fps) is specified by caller
-            now = null, last = Util.timestamp(), dt = 0, gdt = 0, stats = options.stats;
-            frame(), // lets get this party started
-            Game.playMusic();
+            options.ready(images), Game.setKeyListener(options.keys);
+            var canvas = options.canvas, update = options.update, render = options.render, step = options.step, now = null, last = Util.timestamp(), dt = 0, gdt = 0, stats = options.stats;
+            frame(), Game.playMusic();
         });
     },
-    //---------------------------------------------------------------------------
     loadImages: function(names, callback) {
         for (var result = [], count = names.length, onload = function() {
             0 == --count && callback(result);
@@ -711,33 +1141,28 @@ var Game = {
             result[n] = document.createElement("img"), Dom.on(result[n], "load", onload), result[n].src = "images/" + name + ".png";
         }
     },
-    //---------------------------------------------------------------------------
     setKeyListener: function(keys) {
         var onkey = function(keyCode, mode) {
             var n, k;
             for (n = 0; n < keys.length; n++) k = keys[n], k.mode = k.mode || "up", (k.key == keyCode || k.keys && k.keys.indexOf(keyCode) >= 0) && k.mode == mode && k.action.call();
         };
         Dom.on(document, "keydown", function(ev) {
-            onkey(ev.keyCode, "down");
+            playerInput && onkey(ev.keyCode, "down");
         }), Dom.on(document, "keyup", function(ev) {
             onkey(ev.keyCode, "up");
         });
     },
-    //---------------------------------------------------------------------------
     stats: function(parentId, id) {
-        // construct mr.doobs FPS counter - along with friendly good/bad/ok message box
         var result = new Stats();
         return result.domElement.id = id || "stats", $("#" + parentId).append(result.domElement), 
         result;
     },
-    //---------------------------------------------------------------------------
     playMusic: function() {}
 }, Render = {
     polygon: function(ctx, x1, y1, x2, y2, x3, y3, x4, y4, color) {
         ctx.fillStyle = color, ctx.beginPath(), ctx.moveTo(x1, y1), ctx.lineTo(x2, y2), 
         ctx.lineTo(x3, y3), ctx.lineTo(x4, y4), ctx.closePath(), ctx.fill();
     },
-    //---------------------------------------------------------------------------
     segment: function(ctx, width, lanes, x1, y1, w1, x2, y2, w2, fog, color) {
         var lanew1, lanew2, lanex1, lanex2, lane, r1 = Render.rumbleWidth(w1, lanes), r2 = Render.rumbleWidth(w2, lanes), l1 = Render.laneMarkerWidth(w1, lanes), l2 = Render.laneMarkerWidth(w2, lanes);
         if (ctx.fillStyle = color.grass, ctx.fillRect(0, y2, width, y1 - y2), Render.polygon(ctx, x1 - w1 - r1, y1, x1 - w1, y1, x2 - w2, y2, x2 - w2 - r2, y2, color.rumble), 
@@ -748,28 +1173,23 @@ var Game = {
         lane++) Render.polygon(ctx, lanex1 - l1 / 2, y1, lanex1 + l1 / 2, y1, lanex2 + l2 / 2, y2, lanex2 - l2 / 2, y2, color.lane);
         Render.fog(ctx, 0, y1, width, y2 - y1, fog);
     },
-    //---------------------------------------------------------------------------
     background: function(ctx, background, width, height, layer, rotation, offset) {
         rotation = rotation || 0, offset = offset || 0;
         var imageW = layer.w / 2, imageH = layer.h, sourceX = layer.x + Math.floor(layer.w * rotation), sourceY = layer.y, sourceW = Math.min(imageW, layer.x + layer.w - sourceX), sourceH = imageH, destX = 0, destY = offset, destW = Math.floor(width * (sourceW / imageW)), destH = height;
         ctx.drawImage(background, sourceX, sourceY, sourceW, sourceH, destX, destY, destW, destH), 
         imageW > sourceW && ctx.drawImage(background, layer.x, sourceY, imageW - sourceW, sourceH, destW - 1, destY, width - destW, destH);
     },
-    //---------------------------------------------------------------------------
     sprite: function(ctx, width, height, resolution, roadWidth, sprites, sprite, scale, destX, destY, offsetX, offsetY, clipY) {
-        //  scale for projection AND relative to roadWidth (for tweakUI)
         var destW = sprite.w * scale * width / 2 * (SPRITES.SCALE * roadWidth), destH = sprite.h * scale * width / 2 * (SPRITES.SCALE * roadWidth);
         destX += destW * (offsetX || 0), destY += destH * (offsetY || 0);
         var clipH = clipY ? Math.max(0, destY + destH - clipY) : 0;
         destH > clipH && ctx.drawImage(sprites, sprite.x, sprite.y, sprite.w, sprite.h - sprite.h * clipH / destH, destX, destY, destW, destH - clipH);
     },
-    //---------------------------------------------------------------------------
     player: function(ctx, width, height, resolution, roadWidth, sprites, speedPercent, scale, destX, destY, steer, updown) {
         var sprite, bounce = 1.5 * Math.random() * speedPercent * resolution * Util.randomChoice([ -1, 1 ]);
         sprite = 0 > steer ? updown > 0 ? SPRITES.PLAYER_UPHILL_LEFT : SPRITES.PLAYER_LEFT : steer > 0 ? updown > 0 ? SPRITES.PLAYER_UPHILL_RIGHT : SPRITES.PLAYER_RIGHT : updown > 0 ? SPRITES.PLAYER_UPHILL_STRAIGHT : SPRITES.PLAYER_STRAIGHT, 
         Render.sprite(ctx, width, height, resolution, roadWidth, sprites, sprite, scale, destX, destY + bounce, -.5, -1);
     },
-    //---------------------------------------------------------------------------
     fog: function(ctx, x, y, width, height, fog) {
         1 > fog && (ctx.globalAlpha = 1 - fog, ctx.fillStyle = COLORS.FOG, ctx.fillRect(x, y, width, height), 
         ctx.globalAlpha = 1);
@@ -1040,12 +1460,11 @@ var Game = {
     }
 };
 
-SPRITES.SCALE = .3 * (1 / SPRITES.PLAYER_STRAIGHT.w), // the reference sprite width should be 1/3rd the (half-)roadWidth
-SPRITES.BILLBOARDS = [ SPRITES.BILLBOARD01, SPRITES.BILLBOARD02, SPRITES.BILLBOARD03, SPRITES.BILLBOARD04, SPRITES.BILLBOARD05, SPRITES.BILLBOARD06, SPRITES.BILLBOARD07, SPRITES.BILLBOARD08, SPRITES.BILLBOARD09 ], 
+SPRITES.SCALE = .3 * (1 / SPRITES.PLAYER_STRAIGHT.w), SPRITES.BILLBOARDS = [ SPRITES.BILLBOARD01, SPRITES.BILLBOARD02, SPRITES.BILLBOARD03, SPRITES.BILLBOARD04, SPRITES.BILLBOARD05, SPRITES.BILLBOARD06, SPRITES.BILLBOARD07, SPRITES.BILLBOARD08, SPRITES.BILLBOARD09 ], 
 SPRITES.PLANTS = [ SPRITES.TREE1, SPRITES.TREE2, SPRITES.DEAD_TREE1, SPRITES.DEAD_TREE2, SPRITES.PALM_TREE, SPRITES.BUSH1, SPRITES.BUSH2, SPRITES.CACTUS, SPRITES.STUMP, SPRITES.BOULDER1, SPRITES.BOULDER2, SPRITES.BOULDER3 ], 
 SPRITES.CARS = [ SPRITES.CAR01, SPRITES.CAR02, SPRITES.CAR03, SPRITES.CAR04, SPRITES.SEMI, SPRITES.TRUCK ];
 
-var fps = 60, step = 1 / fps, width = 970, height = 500, centrifugal = .3, offRoadDecel = .99, skySpeed = .001, hillSpeed = .002, treeSpeed = .003, skyOffset = 0, hillOffset = 0, treeOffset = 0, segments = [], cars = [], stats = Game.stats("fps"), canvas = Dom.get("canvas"), ctx = canvas.getContext("2d"), background = null, sprites = null, resolution = null, roadWidth = 2e3, segmentLength = 200, rumbleLength = 3, trackLength = null, lanes = 3, fieldOfView = 100, cameraHeight = 1e3, cameraDepth = null, drawDistance = 300, playerX = 0, playerZ = null, fogDensity = 5, position = 0, speed = 0, maxSpeed = segmentLength / step, accel = maxSpeed / 10, breaking = -maxSpeed, decel = -maxSpeed / 5, offRoadDecel = -maxSpeed / 2, offRoadLimit = maxSpeed / 4, totalCars = 0, currentLapTime = 0, lastLapTime = null, keyLeft = !1, keyRight = !1, keyFaster = !1, keySlower = !1, hud = {
+var playerInput = !1, fps = 60, step = 1 / fps, width = 970, height = 500, centrifugal = .3, offRoadDecel = .99, skySpeed = .001, hillSpeed = .002, treeSpeed = .003, skyOffset = 0, hillOffset = 0, treeOffset = 0, segments = [], cars = [], stats = Game.stats("fps"), canvas = Dom.get("canvas"), ctx = canvas.getContext("2d"), background = null, sprites = null, resolution = null, roadWidth = 2e3, segmentLength = 200, rumbleLength = 3, trackLength = null, lanes = 3, fieldOfView = 100, cameraHeight = 1e3, cameraDepth = null, drawDistance = 300, playerX = 0, playerZ = null, fogDensity = 5, position = 0, speed = 0, maxSpeed = segmentLength / step, accel = maxSpeed / 10, breaking = -maxSpeed, decel = -maxSpeed / 5, offRoadDecel = -maxSpeed / 2, offRoadLimit = maxSpeed / 4, totalCars = 0, currentLapTime = 0, lastLapTime = null, keyLeft = !1, keyRight = !1, keyFaster = !1, keySlower = !1, hud = {
     speed: {
         value: null,
         dom: Dom.get("speed_value")
@@ -1083,9 +1502,6 @@ var fps = 60, step = 1 / fps, width = 970, height = 500, centrifugal = .3, offRo
     }
 };
 
-//=========================================================================
-// THE GAME LOOP
-//=========================================================================
 Game.run({
     canvas: canvas,
     render: render,
@@ -1148,17 +1564,7 @@ Game.run({
     }
 });
 
-/******
- * siteCore
- * [Web Template System]
- * Version: 1.0.0.0.A
- *
- * Author: Ed Spurrier
- ******/
-/**
- * WINDOW READY INIT
- */
-var siteCore = {};
+var raceStarted = !1, gamePaused = !1, siteCore = {};
 
 siteCore.apps = {};
 
@@ -1166,10 +1572,8 @@ var debug = !0;
 
 debug && (siteCore.apps.debugConsole = new debugConsole());
 
-//	VARIABLES
-var panelExpanded = !1, $mainPanel = $("#main-panel");
+var viewStatus = "init", panelExpanded = !1, $mainPanel = $("#main-panel");
 
-// If true, start function. If false, listen for INIT.
 window.onload = function() {
     Enabler.isInitialized() ? enablerInitHandler() : Enabler.addEventListener(studio.events.StudioEvent.INIT, enablerInitHandler);
 };

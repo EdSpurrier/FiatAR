@@ -4,9 +4,8 @@
   width: 970px;
   height: 250px;
   position: absolute;
-  background-color: black; }
-  #main-panel.expanded {
-    height: 500px; }
+  background-color: black;
+  overflow: hidden; }
 
 /* Collapsed Panel*/
 #collapsed-panel {
@@ -16,7 +15,8 @@
   height: 248px;
   border: 1px solid #000;
   position: absolute;
-  background: url("../images/bg-collapsed.jpg"); }
+  background: url("../images/bg-collapsed.jpg");
+  overflow: hidden; }
 
 #ctaExpand_dc {
   right: 160px;
@@ -33,7 +33,8 @@
   height: 498px;
   border: 1px solid #000;
   position: absolute;
-  display: none; }
+  display: none;
+  overflow: hidden; }
 
 #ctaClose_dc {
   cursor: pointer;
@@ -101,10 +102,10 @@
 .hud-item {
   z-index: 21; }
 
-.z {
+#view-instructions, #ready, .instructions {
   z-index: 22; }
 
-.z {
+#ready-1, #ready-2, #ready-3, #go {
   z-index: 23; }
 
 #inputVideo {
@@ -113,10 +114,10 @@
 #motion-control-helper, .motion-area {
   z-index: 41; }
 
-#inner-panel {
+#inner-panel, #view-end-game {
   z-index: 50; }
 
-.z {
+.end-game-asset {
   z-index: 60; }
 
 #ytClose_dc, #ctaClose_dc, #abarth-logo {
@@ -139,16 +140,21 @@
   width: 100%;
   height: 122px; }
 
-#collapsed-panel #tag-line {
-  position: absolute;
-  top: 70px;
-  right: 50px; }
-#collapsed-panel #description {
-  position: absolute;
-  top: 115px;
-  right: 50px; }
+#collapsed-panel {
+  filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=0);
+  opacity: 0; }
+  #collapsed-panel #tag-line {
+    position: absolute;
+    top: 70px;
+    right: 50px; }
+  #collapsed-panel #description {
+    position: absolute;
+    top: 115px;
+    right: 50px; }
 
 #abarth-logo {
+  filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=0);
+  opacity: 0;
   position: absolute;
   bottom: 20px;
   right: 20px;
@@ -159,32 +165,26 @@
   top: 0;
   right: 0; }
 
-#game-view #canvas {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 968px;
-  height: 498px;
-  background-color: #acdce6; }
-
 #game-hud {
   position: absolute;
-  height: 100%;
-  width: 100%; }
-  #game-hud .hud-item {
+  width: 968px;
+  height: 498px;
+  top: 0;
+  left: 0; }
+  #game-hud .hud-item, #game-hud .race-starter {
     position: absolute; }
   #game-hud #hud-lap {
     top: 27px;
-    left: 0; }
+    left: 0px; }
   #game-hud #hud-restart {
-    left: 0;
+    left: 5px;
     top: 74px;
     cursor: pointer; }
   #game-hud #hud-end-game {
-    left: 0;
+    left: 5px;
     top: 89px;
     cursor: pointer; }
-  #game-hud #hud-help {
+  #game-hud #hud-options {
     left: 5px;
     bottom: 5px;
     cursor: pointer; }
@@ -192,6 +192,10 @@
     left: 35px;
     bottom: 5px;
     cursor: pointer; }
+  #game-hud .race-starter {
+    top: 30px;
+    left: 50%;
+    margin-left: -85px; }
 
 #inputVideo {
   position: absolute;
@@ -208,7 +212,9 @@
   height: 100px;
   position: absolute;
   right: 10px;
-  top: 30px; }
+  top: 30px;
+  filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=0);
+  opacity: 0; }
   #motion-control-helper .motion-area {
     position: absolute;
     top: 0;
@@ -229,3 +235,110 @@
     height: 100px;
     width: 60px;
     background: blue; }
+
+.view {
+  display: none;
+  filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=0);
+  opacity: 0;
+  width: 968px;
+  height: 498px;
+  position: absolute;
+  top: 0;
+  left: 0; }
+
+#view-game #canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 968px;
+  height: 498px;
+  background-color: #acdce6; }
+
+#view-instructions {
+  background: rgba(0, 0, 0, 0.7); }
+  #view-instructions .instructions {
+    filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=0);
+    opacity: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%; }
+  #view-instructions #move-right-text, #view-instructions #move-left-text {
+    position: absolute;
+    top: 140px;
+    left: 50%;
+    margin-left: -43px; }
+  #view-instructions #how-to-play {
+    filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=0);
+    opacity: 0;
+    position: absolute;
+    top: 66px;
+    left: 50%;
+    margin-left: -162px; }
+  #view-instructions #options-header {
+    filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=0);
+    opacity: 0;
+    position: absolute;
+    top: 66px;
+    left: 50%;
+    margin-left: -162px; }
+  #view-instructions #options-copy {
+    position: absolute;
+    top: 128px;
+    left: 50%;
+    margin-left: -200px; }
+  #view-instructions .options-cta {
+    filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=0);
+    opacity: 0;
+    cursor: pointer;
+    top: 315px; }
+  #view-instructions #resume {
+    position: absolute;
+    left: 50%;
+    margin-left: -185px; }
+  #view-instructions #restart {
+    position: absolute;
+    left: 50%;
+    margin-left: -48px; }
+  #view-instructions #end-game {
+    position: absolute;
+    left: 50%;
+    margin-left: 85px; }
+  #view-instructions #keyboard-controls {
+    position: absolute;
+    top: 128px;
+    left: 50%;
+    margin-left: -156px; }
+  #view-instructions #how-to-play-keyboard {
+    cursor: pointer; }
+  #view-instructions #allow-camera-text {
+    position: absolute;
+    top: 128px;
+    left: 50%;
+    margin-left: -122px; }
+  #view-instructions .car {
+    position: absolute;
+    top: 315px;
+    left: 50%;
+    filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=0);
+    opacity: 0; }
+  #view-instructions #car-straight {
+    margin-left: -130px; }
+  #view-instructions #car-left, #view-instructions #car-right {
+    margin-left: -184px; }
+
+#view-end-game .end-game-asset {
+  position: absolute; }
+#view-end-game #end-game-header {
+  top: 35px;
+  left: 50%;
+  margin-left: -295px; }
+#view-end-game #end-game-cta {
+  top: 155px;
+  left: 50%;
+  margin-left: -93px; }
+#view-end-game #end-game-restart {
+  bottom: 10px;
+  left: 10px;
+  cursor: pointer; }
