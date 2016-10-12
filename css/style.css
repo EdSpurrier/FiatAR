@@ -114,7 +114,7 @@
 #motion-control-helper, .motion-area {
   z-index: 41; }
 
-#inner-panel, #view-end-game {
+#inner-panel, #view-end-game, #motion-line {
   z-index: 50; }
 
 .end-game-asset {
@@ -214,10 +214,19 @@
   right: 10px;
   top: 30px;
   filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=0);
-  opacity: 0; }
+  opacity: 0;
+  display: none; }
+  #motion-control-helper #motion-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100px;
+    width: 1px;
+    background-color: greenyellow; }
   #motion-control-helper .motion-area {
     position: absolute;
     top: 0;
+    filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=50);
     opacity: 0.5;
     height: 100px; }
   #motion-control-helper #left-motion-area {
