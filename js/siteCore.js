@@ -27,7 +27,7 @@ function positionLoop() {
         $motionLine.css({
             left: 150 - getTrack[33][0]
         }), getTrack[33][0] > centerRight ? (motionControllerOutputValue = (getTrack[33][0] - 90) / 60, 
-        keyLeft = !0, keyRight = !1, siteCore.apps.debugConsole.debugValue("input-direction", "LEFT"), 
+        keyDown || (keyLeft = !0, keyRight = !1), siteCore.apps.debugConsole.debugValue("input-direction", "LEFT"), 
         $right.css({
             opacity: .5
         }), $center.css({
@@ -35,8 +35,8 @@ function positionLoop() {
         }), $left.css({
             opacity: .75
         }), siteCore.apps.viewAnimations.instructionsTester("left")) : getTrack[33][0] < centerLeft ? (siteCore.apps.debugConsole.debugValue("input-direction", "RIGHT"), 
-        motionControllerOutputValue = (60 - getTrack[33][0]) / 60, keyLeft = !1, keyRight = !0, 
-        $right.css({
+        motionControllerOutputValue = (60 - getTrack[33][0]) / 60, keyDown || (keyLeft = !1, 
+        keyRight = !0), $right.css({
             opacity: .75
         }), $center.css({
             opacity: .5
@@ -50,7 +50,7 @@ function positionLoop() {
         }), $left.css({
             opacity: .5
         }), motionControllerOutputValue = 0, siteCore.apps.debugConsole.debugValue("game-paused", playerInput), 
-        keyFaster = !0, keyLeft = !1, keyRight = !1, siteCore.apps.viewAnimations.instructionsTester("up")), 
+        keyDown || (keyFaster = !0, keyLeft = !1, keyRight = !1), siteCore.apps.viewAnimations.instructionsTester("up")), 
         siteCore.apps.debugConsole.debugValue("motion-controller-output", motionControllerOutputValue)) : (siteCore.apps.debugConsole.debugValue("input-direction", "NO DATA"), 
         $right.css({
             opacity: .5
@@ -66,7 +66,7 @@ function positionLoop() {
 function update(dt) {
     if (playerInput) {
         var n, car, carW, playerSegment = findSegment(position + playerZ), playerW = SPRITES.PLAYER_STRAIGHT.w * SPRITES.SCALE, speedPercent = speed / maxSpeed, dx = 2 * dt * speedPercent;
-        turnSpeed = 2 * dt * speedPercent * (2 * motionControllerOutputValue);
+        turnSpeed = keyDown ? dx : 2 * dt * speedPercent * (2 * motionControllerOutputValue);
         var startPosition = position;
         for (siteCore.apps.debugConsole.debugValue("speed", speed), siteCore.apps.debugConsole.debugValue("speed-percent", speedPercent), 
         siteCore.apps.debugConsole.debugValue("dt-parameter", dt), siteCore.apps.debugConsole.debugValue("dx-parameter", dx), 
@@ -990,7 +990,7 @@ var Stats = function() {
             startTime = this.end();
         }
     };
-}, frameNo = 0, firstFrame = !0, Dom = {
+}, frameNo = 0, firstFrame = !0, keyDown = !1, Dom = {
     get: function(id) {
         return id instanceof HTMLElement || id === document ? id : document.getElementById(id);
     },
@@ -1124,9 +1124,9 @@ var Game = {
             for (n = 0; n < keys.length; n++) k = keys[n], k.mode = k.mode || "up", (k.key == keyCode || k.keys && k.keys.indexOf(keyCode) >= 0) && k.mode == mode && k.action.call();
         };
         Dom.on(document, "keydown", function(ev) {
-            playerInput && onkey(ev.keyCode, "down");
+            playerInput && (keyDown = !0, onkey(ev.keyCode, "down"));
         }), Dom.on(document, "keyup", function(ev) {
-            onkey(ev.keyCode, "up");
+            keyDown = !1, onkey(ev.keyCode, "up");
         });
     },
     stats: function(parentId, id) {
@@ -1441,7 +1441,7 @@ SPRITES.SCALE = .3 * (1 / SPRITES.PLAYER_STRAIGHT.w), SPRITES.BILLBOARDS = [ SPR
 SPRITES.PLANTS = [ SPRITES.TREE1, SPRITES.TREE2, SPRITES.DEAD_TREE1, SPRITES.DEAD_TREE2, SPRITES.PALM_TREE, SPRITES.BUSH1, SPRITES.BUSH2, SPRITES.CACTUS, SPRITES.STUMP, SPRITES.BOULDER1, SPRITES.BOULDER2, SPRITES.BOULDER3 ], 
 SPRITES.CARS = [ SPRITES.CAR01, SPRITES.CAR02, SPRITES.CAR03, SPRITES.CAR04, SPRITES.SEMI, SPRITES.TRUCK ];
 
-var playerInput = !1, fps = 60, step = 1 / fps, width = 970, height = 500, centrifugal = .4, offRoadDecel = .99, skySpeed = .001, hillSpeed = .002, treeSpeed = .003, skyOffset = 0, hillOffset = 0, treeOffset = 0, segments = [], cars = [], stats = Game.stats("fps"), canvas = Dom.get("canvas"), ctx = canvas.getContext("2d"), background = null, sprites = null, resolution = null, roadWidth = 2e3, segmentLength = 200, rumbleLength = 3, trackLength = null, lanes = 3, fieldOfView = 100, cameraHeight = 1e3, cameraDepth = null, drawDistance = 300, playerX = 0, playerZ = null, fogDensity = 5, position = 0, speed = 0, maxSpeed = segmentLength / step, accel = maxSpeed / 10, breaking = -maxSpeed, decel = -maxSpeed / 5, offRoadDecel = -maxSpeed / 1.5, offRoadLimit = maxSpeed / 4, totalCars = 0, currentLapTime = 0, lastLapTime = null, keyLeft = !1, keyRight = !1, keyFaster = !1, keySlower = !1, offRoadMinSpeed = maxSpeed / 10, turnSpeed = 0, motionControllerOutputValue = 0, hud = {
+var playerInput = !1, fps = 60, step = 1 / fps, width = 970, height = 500, centrifugal = .4, offRoadDecel = .99, skySpeed = .001, hillSpeed = .002, treeSpeed = .003, skyOffset = 0, hillOffset = 0, treeOffset = 0, segments = [], cars = [], stats = Game.stats("fps"), canvas = Dom.get("canvas"), ctx = canvas.getContext("2d"), background = null, sprites = null, resolution = null, roadWidth = 2e3, segmentLength = 200, rumbleLength = 3, trackLength = null, lanes = 3, fieldOfView = 100, cameraHeight = 1e3, cameraDepth = null, drawDistance = 300, playerX = 0, playerZ = null, fogDensity = 5, position = 0, speed = 0, maxSpeed = segmentLength / step, accel = maxSpeed / 10, breaking = -maxSpeed, decel = -maxSpeed / 5, offRoadDecel = -maxSpeed / 1.5, offRoadLimit = maxSpeed / 4, totalCars = 10, currentLapTime = 0, lastLapTime = null, keyLeft = !1, keyRight = !1, keyFaster = !1, keySlower = !1, offRoadMinSpeed = maxSpeed / 10, turnSpeed = 0, motionControllerOutputValue = 0, hud = {
     speed: {
         value: null,
         dom: Dom.get("speed_value")
@@ -1490,13 +1490,13 @@ Game.run({
         keys: [ KEY.LEFT, KEY.A ],
         mode: "down",
         action: function() {
-            keyLeft = !0;
+            keyRight = !1, keyLeft = !0;
         }
     }, {
         keys: [ KEY.RIGHT, KEY.D ],
         mode: "down",
         action: function() {
-            keyRight = !0;
+            keyLeft = !1, keyRight = !0;
         }
     }, {
         keys: [ KEY.UP, KEY.W ],
@@ -1514,13 +1514,13 @@ Game.run({
         keys: [ KEY.LEFT, KEY.A ],
         mode: "up",
         action: function() {
-            keyLeft = !1;
+            keyRight = !1, keyLeft = !1;
         }
     }, {
         keys: [ KEY.RIGHT, KEY.D ],
         mode: "up",
         action: function() {
-            keyRight = !1;
+            keyLeft = !1, keyRight = !1;
         }
     }, {
         keys: [ KEY.UP, KEY.W ],
