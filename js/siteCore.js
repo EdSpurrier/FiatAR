@@ -72,11 +72,19 @@ function update(dt) {
         var n, car, carW, playerSegment = findSegment(position + playerZ), playerW = SPRITES.PLAYER_STRAIGHT.w * SPRITES.SCALE, speedPercent = speed / maxSpeed, dx = 2 * dt * speedPercent;
         turnSpeed = keyDown ? dx : 2 * dt * speedPercent * (2 * motionControllerOutputValue);
         var startPosition = position;
-        for (siteCore.apps.debugConsole.debugValue("speed", speed), siteCore.apps.debugConsole.debugValue("speed-percent", speedPercent), 
+        siteCore.apps.debugConsole.debugValue("speed", speed), siteCore.apps.debugConsole.debugValue("speed-percent", speedPercent), 
         siteCore.apps.debugConsole.debugValue("dt-parameter", dt), siteCore.apps.debugConsole.debugValue("dx-parameter", dx), 
-        siteCore.apps.debugConsole.debugValue("turn-speed", turnSpeed), updateCars(dt, playerSegment, playerW), 
-        position = Util.increase(position, dt * speed, trackLength), keyLeft ? playerX -= turnSpeed : keyRight && (playerX += turnSpeed), 
-        playerX -= dx * speedPercent * playerSegment.curve * centrifugal, speed = keyFaster ? Util.accelerate(speed, accel, dt) : keySlower ? Util.accelerate(speed, breaking, dt) : Util.accelerate(speed, decel, dt), 
+        siteCore.apps.debugConsole.debugValue("turn-speed", turnSpeed);
+        var scaleAmount = 1.34 - speedPercent / 3;
+        for ($canvasElement.css({
+            "-webkit-transform": "scale(" + scaleAmount + ")",
+            "-moz-transform": "scale(" + scaleAmount + ")",
+            "-ms-transform": "scale(" + scaleAmount + ")",
+            "-o-transform": "scale(" + scaleAmount + ")",
+            transform: "scale(" + scaleAmount + ")"
+        }), updateCars(dt, playerSegment, playerW), position = Util.increase(position, dt * speed, trackLength), 
+        keyLeft ? playerX -= turnSpeed : keyRight && (playerX += turnSpeed), playerX -= dx * speedPercent * playerSegment.curve * centrifugal, 
+        speed = keyFaster ? Util.accelerate(speed, accel, dt) : keySlower ? Util.accelerate(speed, breaking, dt) : Util.accelerate(speed, decel, dt), 
         siteCore.apps.debugConsole.debugValue("dx-parameter", dx), siteCore.apps.debugConsole.debugValue("player-x", playerX), 
         -1 > playerX ? (playerX = -1, speed > offRoadMinSpeed && (speed = Util.accelerate(speed, offRoadDecel, dt))) : playerX > 1 && (playerX = 1, 
         speed > offRoadMinSpeed && (speed = Util.accelerate(speed, offRoadDecel, dt))), 
@@ -243,14 +251,15 @@ function addBumps() {
 }
 
 function addDownhillToEnd(num) {
-    num = num || 200, addRoad(num, num, num, -ROAD.CURVE.EASY, -lastY() / segmentLength);
+    num = num || 200, addRoad(num, num, num, 0, -lastY() / segmentLength);
 }
 
 function resetRoad() {
-    segments = [], addStraight(ROAD.LENGTH.SHORT), addLowRollingHills(), addCurve(ROAD.LENGTH.LONG, -ROAD.CURVE.MEDIUM, ROAD.HILL.NONE), 
-    addHill(ROAD.LENGTH.LONG, ROAD.HILL.HIGH), addCurve(ROAD.LENGTH.LONG, ROAD.CURVE.MEDIUM, -ROAD.HILL.LOW), 
-    addBumps(), addHill(ROAD.LENGTH.LONG, -ROAD.HILL.MEDIUM), addStraight(), addSCurves(), 
-    addDownhillToEnd(), resetSprites(), resetCars(), segments[findSegment(playerZ).index + 2].color = COLORS.START, 
+    segments = [], addRoad(0, 100, 0, 0, 0), addRoad(20, 50, 20, -2, 0), addRoad(10, 30, 10, 0, 0), 
+    addRoad(10, 50, 10, 0, 7), addRoad(10, 20, 10, 0, 0), addRoad(20, 80, 20, 2, -5), 
+    addRoad(10, 40, 10, 0, 10), addRoad(10, 50, 10, -2, 5), addRoad(0, 100, 0, 0, 0), 
+    addRoad(20, 80, 20, -2, 5), addRoad(20, 50, 20, 0, 0), addRoad(20, 50, 20, 2, -5), 
+    addDownhillToEnd(80), resetSprites(), resetCars(), segments[findSegment(playerZ).index + 2].color = COLORS.START, 
     segments[findSegment(playerZ).index + 3].color = COLORS.START;
     for (var n = 0; rumbleLength > n; n++) segments[segments.length - 1 - n].color = COLORS.FINISH;
     trackLength = segments.length * segmentLength;
@@ -300,7 +309,7 @@ function reset(options) {
 }
 
 function playerInputStatus($state) {
-    playerInput = !!$state;
+    $state ? (playerInput = !0, keyFaster = !0) : playerInput = !1;
 }
 
 function resetPlayerPosition() {
@@ -329,8 +338,8 @@ function debugConsole() {
         createValue("current-position"), createValue("motion-controller-input"), createValue("input-direction"), 
         createValue("speed"), createValue("speed-percent"), createValue("dt-parameter"), 
         createValue("dx-parameter"), createValue("motion-controller-output"), createValue("player-x"), 
-        createValue("player-x-after-adjustment"), createValue("turn-speed"), styleConsole(), 
-        debugConsole("init"), document.onkeypress = function(e) {
+        createValue("player-x-after-adjustment"), createValue("turn-speed"), createValue("blur-amount"), 
+        styleConsole(), debugConsole("init"), document.onkeypress = function(e) {
             getKeyDown(e), 104 != e.which && 72 != e.which || toggleConsole();
         };
     }, getKeyDown = function(e) {
@@ -623,7 +632,7 @@ function viewAnimations() {
         }, {
             opacity: 1,
             onComplete: function() {
-                instructionsAnimatedIn = !0, "#move-left" == $element && (motionInstructionsActive = !0);
+                instructionsAnimatedIn = !0, "#move-left" == $element ? motionInstructionsActive = !0 : "#how-to-play-keyboard" == $element && (keyboardControlInstructions = !0);
             }
         }, "-=" + anim_fast);
     }, animateInstructionsUpdate = function($element) {
@@ -739,7 +748,7 @@ function viewAnimations() {
             onComplete: function() {
                 $el.expanded.gameHUDelements.css({
                     display: "block"
-                }), raceStarted = !0, playerInputStatus(!0);
+                }), raceStarted = !0, playerInputStatus(!0), pauseGame(!1);
             }
         }, "+=" + raceStarterTime), timeLine.to($el.game.allRaceStarter, anim_fast_x2, {
             opacity: 0,
@@ -806,10 +815,10 @@ function viewAnimations() {
             right: "0px"
         }), timeLine.fromTo($el.abarthLogo, anim_fast_x2, {
             opacity: 0,
-            scale: .5
+            scale: .6
         }, {
             opacity: 1,
-            scale: .6
+            scale: .7
         }, "-=" + anim_fast_x2), timeLine.fromTo($el.collapsed.tagLine, anim_fast_x2, {
             opacity: 0,
             scale: .9
@@ -994,7 +1003,7 @@ var Stats = function() {
             startTime = this.end();
         }
     };
-}, frameNo = 0, firstFrame = !0, keyDown = !1, Dom = {
+}, frameNo = 0, firstFrame = !0, keyDown = !1, keyboardControlInstructions = !1, Dom = {
     get: function(id) {
         return id instanceof HTMLElement || id === document ? id : document.getElementById(id);
     },
@@ -1111,6 +1120,7 @@ var Game = {
             }
             options.ready(images), Game.setKeyListener(options.keys);
             var canvas = options.canvas, update = options.update, render = options.render, step = options.step, now = null, last = Util.timestamp(), dt = 0, gdt = 0, stats = options.stats;
+            options.canvas.getContext("2d");
             frame(), Game.playMusic();
         });
     },
@@ -1128,7 +1138,8 @@ var Game = {
             for (n = 0; n < keys.length; n++) k = keys[n], k.mode = k.mode || "up", (k.key == keyCode || k.keys && k.keys.indexOf(keyCode) >= 0) && k.mode == mode && k.action.call();
         };
         Dom.on(document, "keydown", function(ev) {
-            playerInput && (keyDown = !0, onkey(ev.keyCode, "down"));
+            playerInput ? (keyDown = !0, onkey(ev.keyCode, "down")) : keyboardControlInstructions && "instructions" == viewStatus && (viewStatus = "play", 
+            siteCore.apps.viewAnimations.animateGameStart(), keyboardControlInstructions = !1);
         }), Dom.on(document, "keyup", function(ev) {
             keyDown = !1, onkey(ev.keyCode, "up");
         });
@@ -1167,6 +1178,7 @@ var Game = {
         destH > clipH && ctx.drawImage(sprites, sprite.x, sprite.y, sprite.w, sprite.h - sprite.h * clipH / destH, destX, destY, destW, destH - clipH);
     },
     player: function(ctx, width, height, resolution, roadWidth, sprites, speedPercent, scale, destX, destY, steer, updown) {
+        siteCore.apps.debugConsole.debugValue("blur-amount", 0);
         var sprite, bounce = 1.5 * Math.random() * speedPercent * resolution * Util.randomChoice([ -1, 1 ]);
         sprite = 0 > steer ? updown > 0 ? SPRITES.PLAYER_UPHILL_LEFT : SPRITES.PLAYER_LEFT : steer > 0 ? updown > 0 ? SPRITES.PLAYER_UPHILL_RIGHT : SPRITES.PLAYER_RIGHT : updown > 0 ? SPRITES.PLAYER_UPHILL_STRAIGHT : SPRITES.PLAYER_STRAIGHT, 
         Render.sprite(ctx, width, height, resolution, roadWidth, sprites, sprite, scale, destX, destY + bounce, -.5, -1);
@@ -1445,7 +1457,7 @@ SPRITES.SCALE = .3 * (1 / SPRITES.PLAYER_STRAIGHT.w), SPRITES.BILLBOARDS = [ SPR
 SPRITES.PLANTS = [ SPRITES.TREE1, SPRITES.TREE2, SPRITES.DEAD_TREE1, SPRITES.DEAD_TREE2, SPRITES.PALM_TREE, SPRITES.BUSH1, SPRITES.BUSH2, SPRITES.CACTUS, SPRITES.STUMP, SPRITES.BOULDER1, SPRITES.BOULDER2, SPRITES.BOULDER3 ], 
 SPRITES.CARS = [ SPRITES.CAR01, SPRITES.CAR02, SPRITES.CAR03, SPRITES.CAR04, SPRITES.SEMI, SPRITES.TRUCK ];
 
-var playerInput = !1, fps = 60, step = 1 / fps, width = 970, height = 500, centrifugal = .4, offRoadDecel = .99, skySpeed = .001, hillSpeed = .002, treeSpeed = .003, skyOffset = 0, hillOffset = 0, treeOffset = 0, segments = [], cars = [], stats = Game.stats("fps"), canvas = Dom.get("canvas"), ctx = canvas.getContext("2d"), background = null, sprites = null, resolution = null, roadWidth = 2e3, segmentLength = 200, rumbleLength = 3, trackLength = null, lanes = 3, fieldOfView = 100, cameraHeight = 1e3, cameraDepth = null, drawDistance = 300, playerX = 0, playerZ = null, fogDensity = 5, position = 0, speed = 0, maxSpeed = segmentLength / step, accel = maxSpeed / 10, breaking = -maxSpeed, decel = -maxSpeed / 5, offRoadDecel = -maxSpeed / 1.5, offRoadLimit = maxSpeed / 4, totalCars = 10, currentLapTime = 0, lastLapTime = null, keyLeft = !1, keyRight = !1, keyFaster = !1, keySlower = !1, offRoadMinSpeed = maxSpeed / 10, turnSpeed = 0, motionControllerOutputValue = 0, hud = {
+var playerInput = !1, $canvasElement = $("#canvas"), fps = 60, step = 1 / fps, width = 970, height = 500, centrifugal = .3, offRoadDecel = .99, skySpeed = .001, hillSpeed = .002, treeSpeed = .003, skyOffset = 0, hillOffset = 0, treeOffset = 0, segments = [], cars = [], stats = Game.stats("fps"), canvas = Dom.get("canvas"), ctx = canvas.getContext("2d"), background = null, sprites = null, resolution = null, roadWidth = 2e3, segmentLength = 200, rumbleLength = 3, trackLength = null, lanes = 3, fieldOfView = 100, cameraHeight = 1e3, cameraDepth = null, drawDistance = 300, playerX = 0, playerZ = null, fogDensity = 5, position = 0, speed = 0, maxSpeed = segmentLength / step, accel = maxSpeed / 10, breaking = -maxSpeed, decel = -maxSpeed / 5, offRoadDecel = -maxSpeed / 1.5, offRoadLimit = maxSpeed / 4, totalCars = 10, currentLapTime = 0, lastLapTime = null, keyLeft = !1, keyRight = !1, keyFaster = !1, keySlower = !1, offRoadMinSpeed = maxSpeed / 10, turnSpeed = 0, motionControllerOutputValue = 0, hud = {
     speed: {
         value: null,
         dom: Dom.get("speed_value")
@@ -1477,9 +1489,9 @@ var playerInput = !1, fps = 60, step = 1 / fps, width = 970, height = 500, centr
     },
     CURVE: {
         NONE: 0,
-        EASY: 2,
-        MEDIUM: 4,
-        HARD: 6
+        EASY: 1,
+        MEDIUM: 2,
+        HARD: 3
     }
 };
 
@@ -1511,9 +1523,7 @@ Game.run({
     }, {
         keys: [ KEY.DOWN, KEY.S ],
         mode: "down",
-        action: function() {
-            keySlower = !0;
-        }
+        action: function() {}
     }, {
         keys: [ KEY.LEFT, KEY.A ],
         mode: "up",
@@ -1535,9 +1545,7 @@ Game.run({
     }, {
         keys: [ KEY.DOWN, KEY.S ],
         mode: "up",
-        action: function() {
-            keySlower = !1;
-        }
+        action: function() {}
     } ],
     ready: function(images) {
         background = images[0], sprites = images[1], reset(), Dom.storage.fast_lap_time = Dom.storage.fast_lap_time || 180, 
@@ -1553,7 +1561,7 @@ var debug = !0;
 
 debug && (siteCore.apps.debugConsole = new debugConsole());
 
-var viewStatus = "init", panelExpanded = !1, $mainPanel = $("#main-panel");
+var viewStatus = "init", keyboardControlInstructions = !1, panelExpanded = !1, $mainPanel = $("#main-panel");
 
 window.onload = function() {
     Enabler.isInitialized() ? enablerInitHandler() : Enabler.addEventListener(studio.events.StudioEvent.INIT, enablerInitHandler);

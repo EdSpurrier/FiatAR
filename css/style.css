@@ -67,6 +67,9 @@
     #ctaClose_dc:hover b {
       border: 1px solid lightgrey; }
 
+#ytClose_dc {
+  right: 7px !important; }
+
 * {
   -moz-user-select: -moz-none;
   -ms-user-select: none;
@@ -257,11 +260,25 @@
 
 #view-game #canvas {
   position: absolute;
-  top: 0;
+  bottom: 0;
   left: 0;
   width: 968px;
   height: 498px;
-  background-color: #acdce6; }
+  background-color: #acdce6;
+  moz-transform-origin: center bottom;
+  -o-transform-origin: center bottom;
+  -ms-transform-origin: center bottom;
+  -webkit-transform-origin: center bottom;
+  transform-origin: center bottom;
+  -moz-transition: 0.5s;
+  -o-transition: 0.5s;
+  -webkit-transition: 0.5s;
+  transition: 0.5s;
+  -moz-transform: scale(1.34);
+  -o-transform: scale(1.34);
+  -ms-transform: scale(1.34);
+  -webkit-transform: scale(1.34);
+  transform: scale(1.34); }
 
 #view-instructions {
   background: rgba(0, 0, 0, 0.7); }
