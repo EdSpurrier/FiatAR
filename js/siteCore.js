@@ -919,7 +919,7 @@ function viewAnimations() {
 var waitTime_frame_1 = 4, waitTime_frame_2 = 4, anim_box_in = .65, anim_box_wait = .55, anim_sheen_move = .2, anim_sheen_wait = .1, anim_fast = .25, anim_fast_x2 = 2 * anim_fast, anim_fast_third = anim_fast / 3, anim_fast_half = anim_fast / 2, anim_fast_2_third = .66 * anim_fast, anim_med = .75, anim_med_x2 = 2 * anim_med, anim_slow = 3, anim_slow_x2 = 2 * anim_slow, bg_in = 9, bg_out = 9, bg_wait = 0, bg_full_length = bg_in + bg_out + bg_wait, raceStarterTime = .75, cameraActive = !1, cameraAvailable = !1, motionTrackingActive = !0;
 
 navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia, 
-cameraAvailable = !!navigator.getUserMedia;
+window.URL = window.URL || window.webkitURL || window.msURL || window.mozURL, cameraAvailable = !!navigator.getUserMedia;
 
 var videoInput = document.getElementById("outputVideo"), canvasInput = document.getElementById("inputVideo"), canvasOverlay = document.getElementById("motion-track-overlay"), overlayContext = canvasOverlay.getContext("2d"), htracker;
 
