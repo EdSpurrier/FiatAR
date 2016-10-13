@@ -72,19 +72,11 @@ function update(dt) {
         var n, car, carW, playerSegment = findSegment(position + playerZ), playerW = SPRITES.PLAYER_STRAIGHT.w * SPRITES.SCALE, speedPercent = speed / maxSpeed, dx = 2 * dt * speedPercent;
         turnSpeed = keyDown ? dx : 2 * dt * speedPercent * (2 * motionControllerOutputValue);
         var startPosition = position;
-        siteCore.apps.debugConsole.debugValue("speed", speed), siteCore.apps.debugConsole.debugValue("speed-percent", speedPercent), 
+        for (siteCore.apps.debugConsole.debugValue("speed", speed), siteCore.apps.debugConsole.debugValue("speed-percent", speedPercent), 
         siteCore.apps.debugConsole.debugValue("dt-parameter", dt), siteCore.apps.debugConsole.debugValue("dx-parameter", dx), 
-        siteCore.apps.debugConsole.debugValue("turn-speed", turnSpeed);
-        var scaleAmount = 1.34 - speedPercent / 3;
-        for ($canvasElement.css({
-            "-webkit-transform": "scale(" + scaleAmount + ")",
-            "-moz-transform": "scale(" + scaleAmount + ")",
-            "-ms-transform": "scale(" + scaleAmount + ")",
-            "-o-transform": "scale(" + scaleAmount + ")",
-            transform: "scale(" + scaleAmount + ")"
-        }), updateCars(dt, playerSegment, playerW), position = Util.increase(position, dt * speed, trackLength), 
-        keyLeft ? playerX -= turnSpeed : keyRight && (playerX += turnSpeed), playerX -= dx * speedPercent * playerSegment.curve * centrifugal, 
-        speed = keyFaster ? Util.accelerate(speed, accel, dt) : keySlower ? Util.accelerate(speed, breaking, dt) : Util.accelerate(speed, decel, dt), 
+        siteCore.apps.debugConsole.debugValue("turn-speed", turnSpeed), updateCars(dt, playerSegment, playerW), 
+        position = Util.increase(position, dt * speed, trackLength), keyLeft ? playerX -= turnSpeed : keyRight && (playerX += turnSpeed), 
+        playerX -= dx * speedPercent * playerSegment.curve * centrifugal, speed = keyFaster ? Util.accelerate(speed, accel, dt) : keySlower ? Util.accelerate(speed, breaking, dt) : Util.accelerate(speed, decel, dt), 
         siteCore.apps.debugConsole.debugValue("dx-parameter", dx), siteCore.apps.debugConsole.debugValue("player-x", playerX), 
         -1 > playerX ? (playerX = -1, speed > offRoadMinSpeed && (speed = Util.accelerate(speed, offRoadDecel, dt))) : playerX > 1 && (playerX = 1, 
         speed > offRoadMinSpeed && (speed = Util.accelerate(speed, offRoadDecel, dt))), 
@@ -139,9 +131,18 @@ function formatTime(dt) {
 
 function render() {
     if (!gamePaused) {
-        var baseSegment = findSegment(position), basePercent = Util.percentRemaining(position, segmentLength), playerSegment = findSegment(position + playerZ), playerPercent = Util.percentRemaining(position + playerZ, segmentLength), playerY = Util.interpolate(playerSegment.p1.world.y, playerSegment.p2.world.y, playerPercent), maxy = height;
-        debug && (siteCore.apps.debugConsole.debugValue("current-segment", position / segmentLength), 
-        siteCore.apps.debugConsole.debugValue("current-position", position));
+        var baseSegment = findSegment(position), basePercent = Util.percentRemaining(position, segmentLength), playerSegment = findSegment(position + playerZ), playerPercent = Util.percentRemaining(position + playerZ, segmentLength), playerY = Util.interpolate(playerSegment.p1.world.y, playerSegment.p2.world.y, playerPercent), maxy = height, currentSegment = position / segmentLength;
+        debug && (siteCore.apps.debugConsole.debugValue("current-segment", currentSegment), 
+        siteCore.apps.debugConsole.debugValue("current-position", position)), lapStarted ? minLapSegment > currentSegment && (lapStarted = !1, 
+        maxLaps > currentLap ? (currentLap++, 2 == currentLap ? ($lap1.css({
+            opacity: 0
+        }), $lap2.css({
+            opacity: 1
+        })) : 3 == currentLap && ($lap2.css({
+            opacity: 0
+        }), $lap3.css({
+            opacity: 1
+        }))) : siteCore.apps.viewAnimations.animateFinishedRace()) : currentSegment > minLapSegment && (lapStarted = !0);
         var x = 0, dx = -(baseSegment.curve * basePercent);
         ctx.clearRect(0, 0, width, height), Render.background(ctx, background, width, height, BACKGROUND.SKY, skyOffset, resolution * skySpeed * playerY), 
         Render.background(ctx, background, width, height, BACKGROUND.HILLS, hillOffset, resolution * hillSpeed * playerY), 
@@ -313,7 +314,7 @@ function playerInputStatus($state) {
 }
 
 function resetPlayerPosition() {
-    speed = 0, position = 0, playerX = 0;
+    speed = 0, position = 0, playerX = 0, currentLap = 1;
 }
 
 function pauseGame($status) {
@@ -495,19 +496,21 @@ function viewAnimations() {
         $el.collapsed.description = $("#description"), $el.collapsed.button = $("#ctaExpand_dc"), 
         $el.expanded = {}, $el.expanded.panel = $("#expanded-panel"), $el.expanded.game = $("#view-game"), 
         $el.expanded.gameHUD = $("#game-hud"), $el.expanded.gameHUDelements = $(".hud-item"), 
-        $el.expanded.instructions = {}, $el.expanded.instructions.view = $("#view-instructions"), 
-        $el.expanded.instructions.header = $("#how-to-play"), $el.expanded.instructions.instruction = $(".instructions"), 
-        $el.expanded.instructions.cars = $(".car"), $el.expanded.instructions.carStraight = $("#car-straight"), 
-        $el.expanded.instructions.carLeft = $("#car-left"), $el.expanded.instructions.carRight = $("#car-right"), 
-        $el.expanded.instructions.gameOptionsHeader = $("#options-header"), $el.expanded.instructions.gameOptions = $("#options-screen"), 
-        $el.expanded.instructions.gameOptionsCta = $(".options-cta"), $el.expanded.endGame = {}, 
-        $el.expanded.endGame.view = $("#view-end-game"), $el.expanded.endGame.bg = $("#end-game-bg"), 
+        $el.expanded.gameHUDlapCounter = $(".hud-lap"), $el.expanded.gameHUDlap1 = $("#hud-lap-1"), 
+        $el.expanded.gameHUDlap2 = $("#hud-lap-2"), $el.expanded.gameHUDlap3 = $("#hud-lap-3"), 
+        $el.expanded.gameHUDniceDriving = $("#nice-driving"), $el.expanded.instructions = {}, 
+        $el.expanded.instructions.view = $("#view-instructions"), $el.expanded.instructions.header = $("#how-to-play"), 
+        $el.expanded.instructions.instruction = $(".instructions"), $el.expanded.instructions.cars = $(".car"), 
+        $el.expanded.instructions.carStraight = $("#car-straight"), $el.expanded.instructions.carLeft = $("#car-left"), 
+        $el.expanded.instructions.carRight = $("#car-right"), $el.expanded.instructions.gameOptionsHeader = $("#options-header"), 
+        $el.expanded.instructions.gameOptions = $("#options-screen"), $el.expanded.instructions.gameOptionsCta = $(".options-cta"), 
+        $el.expanded.endGame = {}, $el.expanded.endGame.view = $("#view-end-game"), $el.expanded.endGame.bg = $("#end-game-bg"), 
         $el.expanded.endGame.header = $("#end-game-header"), $el.expanded.endGame.logo = $("#end-game-logo"), 
         $el.expanded.endGame.cta = $("#end-game-cta"), $el.expanded.endGame.restart = $("#end-game-restart"), 
-        $el.game = {}, $el.game.allRaceStarter = $(".race-starter"), $el.game.raceStarter = $("#race-starter"), 
-        $el.game.ready = $("#ready"), $el.game.ready1 = $("#ready-1"), $el.game.ready2 = $("#ready-2"), 
-        $el.game.ready3 = $("#ready-3"), $el.game.go = $("#go"), $el.abarthLogo = $("#abarth-logo"), 
-        $el.mainPanel = $("#main-panel"), $el.motionControllerVideo = $("#inputVideo");
+        $el.game = {}, $el.game.allRaceStarter = $(".race-starter"), $el.game.raceStarterBG = $("#race-starter-bg"), 
+        $el.game.ready1 = $("#ready-1"), $el.game.ready2 = $("#ready-2"), $el.game.ready3 = $("#ready-3"), 
+        $el.game.go = $("#go"), $el.abarthLogo = $("#abarth-logo"), $el.mainPanel = $("#main-panel"), 
+        $el.motionControllerVideo = $("#outputVideo, #motion-track-overlay");
     }, setupCollapse = function() {
         $el.collapsed.panel.css({
             display: "block"
@@ -547,9 +550,19 @@ function viewAnimations() {
             opacity: 0
         }), $el.expanded.instructions.cars.css({
             opacity: 0
+        }), $el.expanded.gameHUDlapCounter.css({
+            opacity: 0
+        }), $el.expanded.gameHUDniceDriving.css({
+            opacity: 0
         });
     }, setupGame = function() {
-        $el.game.allRaceStarter.css({
+        $el.game.raceStarterBG.css({
+            opacity: 0
+        }), $el.game.allRaceStarter.css({
+            opacity: 0
+        }), $el.expanded.gameHUDniceDriving.css({
+            opacity: 0
+        }), $el.expanded.gameHUDlapCounter.css({
             opacity: 0
         });
     }, setupGameOptionsIn = function() {
@@ -565,7 +578,9 @@ function viewAnimations() {
             opacity: 0
         });
     }, setupGameOptionsOut = function() {
-        $el.game.allRaceStarter.css({
+        $el.game.raceStarterBG.css({
+            opacity: 0
+        }), $el.game.allRaceStarter.css({
             opacity: 0
         });
     }, setupEndGame = function() {
@@ -725,7 +740,7 @@ function viewAnimations() {
             }
         }), timeLine.to($el.expanded.game, anim_fast_x2, {
             scale: 1
-        }, "-=" + anim_med), timeLine.to([ $el.expanded.gameHUD, $el.game.raceStarter ], anim_fast_x2, {
+        }, "-=" + anim_med), timeLine.to($el.expanded.gameHUD, anim_fast_x2, {
             opacity: 1
         }, "-=" + anim_fast), timeLine.fromTo($el.expanded.gameHUDelements, anim_fast, {
             opacity: 0,
@@ -735,14 +750,33 @@ function viewAnimations() {
             scale: 1
         }), raceStarted || raceStartLights();
     }, raceStartLights = function() {
-        timeLine.to($el.game.ready, anim_fast, {
-            opacity: 1
-        }, "+=" + anim_fast_x2), timeLine.to($el.game.ready1, anim_fast, {
-            opacity: 1
-        }, "+=" + raceStarterTime), timeLine.to($el.game.ready2, anim_fast, {
-            opacity: 1
+        timeLine.fromTo([ $el.game.ready3, $el.game.raceStarterBG ], anim_fast, {
+            opacity: 0,
+            scale: .6
+        }, {
+            opacity: 1,
+            scale: 1
         }, "+=" + raceStarterTime), timeLine.to($el.game.ready3, anim_fast, {
-            opacity: 1
+            opacity: 0,
+            scale: 1.2
+        }, "+=" + raceStarterTime), timeLine.fromTo($el.game.ready2, anim_fast, {
+            opacity: 0,
+            scale: .6
+        }, {
+            opacity: 1,
+            scale: 1
+        }), timeLine.to($el.game.ready2, anim_fast, {
+            opacity: 0,
+            scale: 1.2
+        }, "+=" + raceStarterTime), timeLine.fromTo($el.game.ready1, anim_fast, {
+            opacity: 0,
+            scale: .6
+        }, {
+            opacity: 1,
+            scale: 1
+        }), timeLine.to($el.game.ready1, anim_fast, {
+            opacity: 0,
+            scale: 1.2
         }, "+=" + raceStarterTime), timeLine.to($el.game.go, anim_fast, {
             opacity: 1,
             onComplete: function() {
@@ -750,10 +784,16 @@ function viewAnimations() {
                     display: "block"
                 }), raceStarted = !0, playerInputStatus(!0), pauseGame(!1);
             }
-        }, "+=" + raceStarterTime), timeLine.to($el.game.allRaceStarter, anim_fast_x2, {
+        }), timeLine.to([ $el.game.allRaceStarter, $el.game.raceStarterBG ], anim_fast_x2, {
             opacity: 0,
             scale: 1.2
-        }, "+=" + anim_med_x2);
+        }, "+=" + anim_med_x2), timeLine.fromTo($el.expanded.gameHUDlap1, anim_fast_x2, {
+            opacity: 0,
+            left: -190
+        }, {
+            opacity: 1,
+            left: 0
+        });
     }, animateRestart = function() {
         playerInputStatus(!1), raceStarted = !1, gamePaused = !1, timeLine.clear(), timeLine.to($el.expanded.game, anim_fast_x2, {
             scale: 1.5,
@@ -779,7 +819,7 @@ function viewAnimations() {
             opacity: 1
         }), timeLine.to($el.motionControllerVideo, anim_fast_x2, {
             opacity: 1
-        }, "-=" + anim_fast), timeLine.to([ $el.expanded.gameHUD, $el.game.raceStarter ], anim_fast_x2, {
+        }, "-=" + anim_fast), timeLine.to([ $el.expanded.gameHUD ], anim_fast_x2, {
             opacity: 1
         }, "-=" + anim_fast), timeLine.fromTo($el.expanded.gameHUDelements, anim_fast, {
             opacity: 0,
@@ -837,6 +877,22 @@ function viewAnimations() {
         }, {
             opacity: 1,
             scale: 1
+        });
+    }, animateFinishedRace = function() {
+        timeLine.clear(), timeLine.fromTo([ $el.game.raceStarterBG, $el.expanded.gameHUDniceDriving ], anim_fast, {
+            opacity: 0,
+            scale: .7
+        }, {
+            opacity: 1,
+            scale: 1,
+            onComplete: function() {
+                timeLine.to($el.expanded.game, finishRaceWaitTime, {
+                    scale: 1,
+                    onComplete: function() {
+                        animateEndGame();
+                    }
+                });
+            }
         });
     }, animateEndGame = function() {
         playerInputStatus(!1), raceStarted = !1, gamePaused = !1, timeLine.clear(), setupEndGame(), 
@@ -921,11 +977,14 @@ function viewAnimations() {
         },
         animateEndGame: function() {
             animateEndGame();
+        },
+        animateFinishedRace: function() {
+            animateFinishedRace();
         }
     };
 }
 
-var waitTime_frame_1 = 4, waitTime_frame_2 = 4, anim_box_in = .65, anim_box_wait = .55, anim_sheen_move = .2, anim_sheen_wait = .1, anim_fast = .25, anim_fast_x2 = 2 * anim_fast, anim_fast_third = anim_fast / 3, anim_fast_half = anim_fast / 2, anim_fast_2_third = .66 * anim_fast, anim_med = .75, anim_med_x2 = 2 * anim_med, anim_slow = 3, anim_slow_x2 = 2 * anim_slow, bg_in = 9, bg_out = 9, bg_wait = 0, bg_full_length = bg_in + bg_out + bg_wait, raceStarterTime = .75, cameraActive = !1, cameraAvailable = !1, motionTrackingActive = !0;
+var waitTime_frame_1 = 4, waitTime_frame_2 = 4, anim_box_in = .65, anim_box_wait = .55, anim_sheen_move = .2, anim_sheen_wait = .1, anim_fast = .25, anim_fast_x2 = 2 * anim_fast, anim_fast_third = anim_fast / 3, anim_fast_half = anim_fast / 2, anim_fast_2_third = .66 * anim_fast, anim_med = .75, anim_med_x2 = 2 * anim_med, anim_slow = 3, anim_slow_x2 = 2 * anim_slow, bg_in = 9, bg_out = 9, bg_wait = 0, bg_full_length = bg_in + bg_out + bg_wait, raceStarterTime = .75, finishRaceWaitTime = 3, cameraActive = !1, cameraAvailable = !1, motionTrackingActive = !0;
 
 navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia, 
 window.URL = window.URL || window.webkitURL || window.msURL || window.mozURL, cameraAvailable = !!navigator.getUserMedia;
@@ -1457,7 +1516,7 @@ SPRITES.SCALE = .3 * (1 / SPRITES.PLAYER_STRAIGHT.w), SPRITES.BILLBOARDS = [ SPR
 SPRITES.PLANTS = [ SPRITES.TREE1, SPRITES.TREE2, SPRITES.DEAD_TREE1, SPRITES.DEAD_TREE2, SPRITES.PALM_TREE, SPRITES.BUSH1, SPRITES.BUSH2, SPRITES.CACTUS, SPRITES.STUMP, SPRITES.BOULDER1, SPRITES.BOULDER2, SPRITES.BOULDER3 ], 
 SPRITES.CARS = [ SPRITES.CAR01, SPRITES.CAR02, SPRITES.CAR03, SPRITES.CAR04, SPRITES.SEMI, SPRITES.TRUCK ];
 
-var playerInput = !1, $canvasElement = $("#canvas"), fps = 60, step = 1 / fps, width = 970, height = 500, centrifugal = .3, offRoadDecel = .99, skySpeed = .001, hillSpeed = .002, treeSpeed = .003, skyOffset = 0, hillOffset = 0, treeOffset = 0, segments = [], cars = [], stats = Game.stats("fps"), canvas = Dom.get("canvas"), ctx = canvas.getContext("2d"), background = null, sprites = null, resolution = null, roadWidth = 2e3, segmentLength = 200, rumbleLength = 3, trackLength = null, lanes = 3, fieldOfView = 100, cameraHeight = 1e3, cameraDepth = null, drawDistance = 300, playerX = 0, playerZ = null, fogDensity = 5, position = 0, speed = 0, maxSpeed = segmentLength / step, accel = maxSpeed / 10, breaking = -maxSpeed, decel = -maxSpeed / 5, offRoadDecel = -maxSpeed / 1.5, offRoadLimit = maxSpeed / 4, totalCars = 10, currentLapTime = 0, lastLapTime = null, keyLeft = !1, keyRight = !1, keyFaster = !1, keySlower = !1, offRoadMinSpeed = maxSpeed / 10, turnSpeed = 0, motionControllerOutputValue = 0, hud = {
+var playerInput = !1, $canvasElement = $("#canvas"), currentLap = 1, maxLaps = 3, lapStarted = !1, minLapSegment = 200, $lap1 = $("#hud-lap-1"), $lap2 = $("#hud-lap-2"), $lap3 = $("#hud-lap-3"), fps = 60, step = 1 / fps, width = 970, height = 500, centrifugal = .3, offRoadDecel = .99, skySpeed = .001, hillSpeed = .002, treeSpeed = .003, skyOffset = 0, hillOffset = 0, treeOffset = 0, segments = [], cars = [], stats = Game.stats("fps"), canvas = Dom.get("canvas"), ctx = canvas.getContext("2d"), background = null, sprites = null, resolution = null, roadWidth = 2e3, segmentLength = 200, rumbleLength = 3, trackLength = null, lanes = 3, fieldOfView = 100, cameraHeight = 1e3, cameraDepth = null, drawDistance = 300, playerX = 0, playerZ = null, fogDensity = 5, position = 0, speed = 0, maxSpeed = segmentLength / step, accel = maxSpeed / 10, breaking = -maxSpeed, decel = -maxSpeed / 5, offRoadDecel = -maxSpeed / 1.5, offRoadLimit = maxSpeed / 4, totalCars = 10, currentLapTime = 0, lastLapTime = null, keyLeft = !1, keyRight = !1, keyFaster = !1, keySlower = !1, offRoadMinSpeed = maxSpeed / 10, turnSpeed = 0, motionControllerOutputValue = 0, hud = {
     speed: {
         value: null,
         dom: Dom.get("speed_value")

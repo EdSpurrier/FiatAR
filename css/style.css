@@ -105,10 +105,10 @@
 .hud-item {
   z-index: 21; }
 
-#view-instructions, #ready, .instructions {
+#view-instructions, #ready, .instructions, #race-starter-bg {
   z-index: 22; }
 
-#ready-1, #ready-2, #ready-3, #go {
+#ready-1, #ready-2, #ready-3, #go, #nice-driving {
   z-index: 23; }
 
 #inputVideo, #motion-track-overlay, #outputVideo {
@@ -174,10 +174,10 @@
   height: 498px;
   top: 0;
   left: 0; }
-  #game-hud .hud-item, #game-hud .race-starter {
+  #game-hud .hud-item, #game-hud .race-starter, #game-hud #race-starter-bg, #game-hud .hud-lap, #game-hud #nice-driving {
     position: absolute; }
-  #game-hud #hud-lap {
-    top: 27px;
+  #game-hud .hud-lap {
+    top: 40px;
     left: 0px; }
   #game-hud #hud-restart {
     left: 5px;
@@ -188,33 +188,46 @@
     top: 89px;
     cursor: pointer; }
   #game-hud #hud-options {
-    left: 5px;
-    bottom: 5px;
+    left: 15px;
+    bottom: 10px;
     cursor: pointer; }
   #game-hud #hud-sound {
-    left: 35px;
-    bottom: 5px;
+    left: 48px;
+    bottom: 12px;
     cursor: pointer; }
   #game-hud .race-starter {
-    top: 30px;
+    top: 112px;
     left: 50%;
-    margin-left: -85px; }
+    margin-left: -41px; }
+    #game-hud .race-starter#go {
+      margin-left: -95px; }
+  #game-hud #nice-driving {
+    top: 135px;
+    left: 50%;
+    margin-left: -173px; }
+  #game-hud #race-starter-bg {
+    top: 0px;
+    left: 50%;
+    margin-left: -419px; }
 
 #outputVideo, #motion-track-overlay {
   position: absolute;
   top: 30px;
-  right: 30px;
+  right: 10px;
   -o-transform: scaleX(-1);
   -moz-transform: scaleX(-1);
   -webkit-transform: scaleX(-1);
   -ms-transform: scaleX(-1);
-  transform: scaleX(-1); }
+  transform: scaleX(-1);
+  border: 1px solid white;
+  filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=0);
+  opacity: 0; }
 
 #motion-control-helper {
   width: 160px;
   height: 120px;
   position: absolute;
-  right: 30px;
+  right: 10px;
   top: 30px;
   filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=0);
   opacity: 0;
