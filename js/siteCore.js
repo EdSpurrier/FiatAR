@@ -1576,9 +1576,7 @@ Game.run({
     }, {
         keys: [ KEY.UP, KEY.W ],
         mode: "down",
-        action: function() {
-            keyFaster = !0;
-        }
+        action: function() {}
     }, {
         keys: [ KEY.DOWN, KEY.S ],
         mode: "down",
@@ -1598,9 +1596,7 @@ Game.run({
     }, {
         keys: [ KEY.UP, KEY.W ],
         mode: "up",
-        action: function() {
-            keyFaster = !1;
-        }
+        action: function() {}
     }, {
         keys: [ KEY.DOWN, KEY.S ],
         mode: "up",

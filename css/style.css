@@ -68,7 +68,9 @@
       border: 1px solid lightgrey; }
 
 #ytClose_dc {
-  right: 7px !important; }
+  position: absolute;
+  top: 0px !important;
+  left: 896px !important; }
 
 * {
   -moz-user-select: -moz-none;
