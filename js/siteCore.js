@@ -81,7 +81,7 @@ function update(dt) {
         -1 > playerX ? (playerX = -1, speed > offRoadMinSpeed && (speed = Util.accelerate(speed, offRoadDecel, dt))) : playerX > 1 && (playerX = 1, 
         speed > offRoadMinSpeed && (speed = Util.accelerate(speed, offRoadDecel, dt))), 
         siteCore.apps.debugConsole.debugValue("player-x-after-adjustment", playerX), n = 0; n < playerSegment.cars.length; n++) if (car = playerSegment.cars[n], 
-        carW = car.sprite.w * SPRITES.SCALE, speed > car.speed && Util.overlap(playerX, playerW, car.offset, carW, .8)) {
+        carW = car.sprite.w * (SPRITES.SCALE / 2), speed > car.speed && Util.overlap(playerX, playerW, car.offset, carW, .8)) {
             speed = car.speed * (car.speed / speed), position = Util.increase(car.z, -playerZ, trackLength);
             break;
         }
@@ -113,7 +113,7 @@ function updateCarOffset(car, carSegment, playerSegment, playerW) {
     for (i = 1; lookahead > i; i++) {
         if (segment = segments[(carSegment.index + i) % segments.length], segment === playerSegment && car.speed > speed && Util.overlap(playerX, playerW, car.offset, carW, 1.2)) return dir = playerX > .5 ? -1 : -.5 > playerX ? 1 : car.offset > playerX ? 1 : -1, 
         1 * dir / i * (car.speed - speed) / maxSpeed;
-        for (j = 0; j < segment.cars.length; j++) if (otherCar = segment.cars[j], otherCarW = otherCar.sprite.w * SPRITES.SCALE, 
+        for (j = 0; j < segment.cars.length; j++) if (otherCar = segment.cars[j], otherCarW = otherCar.sprite.w * (SPRITES.SCALE / 2), 
         car.speed > otherCar.speed && Util.overlap(car.offset, carW, otherCar.offset, otherCarW, 1.2)) return dir = otherCar.offset > .5 ? -1 : otherCar.offset < -.5 ? 1 : car.offset > otherCar.offset ? 1 : -1, 
         1 * dir / i * (car.speed - otherCar.speed) / maxSpeed;
     }
@@ -163,7 +163,7 @@ function render() {
             for (i = 0; i < segment.sprites.length; i++) sprite = segment.sprites[i], spriteScale = segment.p1.screen.scale, 
             spriteX = segment.p1.screen.x + spriteScale * sprite.offset * roadWidth * width / 2, 
             spriteY = segment.p1.screen.y, Render.sprite(ctx, width, height, resolution, roadWidth, sprites, sprite.source, spriteScale, spriteX, spriteY, sprite.offset < 0 ? -1 : 0, -1, segment.clip);
-            segment == playerSegment && Render.player(ctx, width, height, resolution, roadWidth, sprites, speed / maxSpeed, cameraDepth / playerZ, width / 2, height / 2 - cameraDepth / playerZ * Util.interpolate(playerSegment.p1.camera.y, playerSegment.p2.camera.y, playerPercent) * height / 2, speed * (keyLeft ? -1 : keyRight ? 1 : 0), playerSegment.p2.world.y - playerSegment.p1.world.y);
+            segment == playerSegment && Render.player(ctx, width, height, resolution, roadWidth, sprites, speed / maxSpeed, cameraDepth / playerZ / 5, width / 2, height / 2 - cameraDepth / playerZ * Util.interpolate(playerSegment.p1.camera.y, playerSegment.p2.camera.y, playerPercent) * height / 2, speed * (keyLeft ? -1 : keyRight ? 1 : 0), playerSegment.p2.world.y - playerSegment.p1.world.y);
         }
     }
 }
@@ -267,23 +267,38 @@ function resetRoad() {
 }
 
 function resetSprites() {
-    var n, i;
-    for (addSprite(20, SPRITES.BILLBOARD07, -1), addSprite(40, SPRITES.BILLBOARD06, -1), 
-    addSprite(60, SPRITES.BILLBOARD08, -1), addSprite(80, SPRITES.BILLBOARD09, -1), 
-    addSprite(100, SPRITES.BILLBOARD01, -1), addSprite(120, SPRITES.BILLBOARD02, -1), 
-    addSprite(140, SPRITES.BILLBOARD03, -1), addSprite(160, SPRITES.BILLBOARD04, -1), 
-    addSprite(180, SPRITES.BILLBOARD05, -1), addSprite(240, SPRITES.BILLBOARD07, -1.2), 
-    addSprite(240, SPRITES.BILLBOARD06, 1.2), addSprite(segments.length - 25, SPRITES.BILLBOARD07, -1.2), 
-    addSprite(segments.length - 25, SPRITES.BILLBOARD06, 1.2), n = 10; 200 > n; n += 4 + Math.floor(n / 100)) addSprite(n, SPRITES.PALM_TREE, .5 + .5 * Math.random()), 
-    addSprite(n, SPRITES.PALM_TREE, 1 + 2 * Math.random());
-    for (n = 250; 1e3 > n; n += 5) addSprite(n, SPRITES.COLUMN, 1.1), addSprite(n + Util.randomInt(0, 5), SPRITES.TREE1, -1 - 2 * Math.random()), 
-    addSprite(n + Util.randomInt(0, 5), SPRITES.TREE2, -1 - 2 * Math.random());
-    for (n = 200; n < segments.length; n += 3) addSprite(n, Util.randomChoice(SPRITES.PLANTS), Util.randomChoice([ 1, -1 ]) * (2 + 5 * Math.random()));
-    var side, sprite, offset;
-    for (n = 1e3; n < segments.length - 50; n += 100) for (side = Util.randomChoice([ 1, -1 ]), 
-    addSprite(n + Util.randomInt(0, 50), Util.randomChoice(SPRITES.BILLBOARDS), -side), 
-    i = 0; 20 > i; i++) sprite = Util.randomChoice(SPRITES.PLANTS), offset = side * (1.5 + Math.random()), 
-    addSprite(n + Util.randomInt(0, 50), sprite, offset);
+    var n;
+    for (addSprite(30, SPRITES.BILLBOARDABARTH, -2), addSprite(30, SPRITES.BILLBOARDABARTH, 2), 
+    n = 40; 300 > n; n += 4 + Math.floor(n / 100)) addSprite(n, SPRITES.CYPRESS, 1 + .5 * Math.random());
+    for (n = 40; 300 > n; n += 7 + Math.floor(n / 100)) addSprite(n, SPRITES.CYPRESS, 3 + .5 * Math.random());
+    for (n = 40; 200 > n; n += 40 + Math.floor(n / 100)) addSprite(n, SPRITES.STONEPINE, -1 - 2 * Math.random());
+    for (n = 40; 200 > n; n += 10 + Math.floor(n / 100)) addSprite(n, SPRITES.STONEPINE, -3 - 3 * Math.random());
+    for (n = 40; 200 > n; n += 40 + Math.floor(n / 100)) addSprite(n, SPRITES.ROSEBUSH, -1.2 - 2 * Math.random());
+    for (n = 40; 200 > n; n += 30 + Math.floor(n / 100)) addSprite(n, SPRITES.SUNFLOWERS, -1.2 - 2 * Math.random());
+    for (addSprite(115, SPRITES.BILLBOARDFIAT, -2), addSprite(230, SPRITES.FENCE, -1.5), 
+    addSprite(230, SPRITES.FENCE, -2.5), addSprite(230, SPRITES.FENCE, -3.5), addSprite(235, SPRITES.ROSEBUSH, -1.65), 
+    addSprite(240, SPRITES.SUNFLOWERS, -2.3), addSprite(245, SPRITES.ROSEBUSH, -1.2), 
+    addSprite(250, SPRITES.FARMHOUSE, -2), addSprite(255, SPRITES.SUNFLOWERS, -2), addSprite(257, SPRITES.ROSEBUSH, -1.2), 
+    addSprite(260, SPRITES.OLIVETREE, -1.5), addSprite(270, SPRITES.OLIVETREE, -1.2), 
+    addSprite(275, SPRITES.FENCE, -1.5), addSprite(275, SPRITES.FENCE, -2.5), addSprite(275, SPRITES.FENCE, -3.5), 
+    n = 270; 600 > n; n += 1 + Math.floor(n / 100)) addSprite(n, SPRITES.CYPRESS, -1 - 1 * Math.random());
+    for (n = 270; 450 > n; n += 1 + Math.floor(n / 100)) addSprite(n, SPRITES.CYPRESS, 1 + 2 * Math.random());
+    for (addSprite(460, SPRITES.FENCE, 1.5), addSprite(460, SPRITES.FENCE, 2.5), addSprite(460, SPRITES.FENCE, 3.5), 
+    addSprite(465, SPRITES.ROSEBUSH, 1.65), addSprite(467, SPRITES.SUNFLOWERS, 2.3), 
+    addSprite(490, SPRITES.BILLBOARDABARTH, 2), addSprite(495, SPRITES.OLIVETREE, 1.5), 
+    n = 540; 900 > n; n += 5 + Math.floor(n / 100)) addSprite(n, SPRITES.STONEPINE, -1.25 - 3 * Math.random());
+    for (n = 540; 900 > n; n += 5 + Math.floor(n / 100)) addSprite(n, SPRITES.SUNFLOWERS, -1.25 - 3 * Math.random());
+    for (addSprite(600, SPRITES.BILLBOARDFIAT, 2), addSprite(800, SPRITES.BILLBOARDABARTH, 2), 
+    n = 540; 900 > n; n += 5 + Math.floor(n / 100)) addSprite(n, SPRITES.STONEPINE, 1.25 + 3 * Math.random());
+    for (n = 540; 900 > n; n += 5 + Math.floor(n / 100)) addSprite(n, SPRITES.SUNFLOWERS, 1.25 + 3 * Math.random());
+    for (addSprite(640, SPRITES.BILLBOARDFIAT, -2), addSprite(760, SPRITES.BILLBOARDABARTH, -2), 
+    addSprite(920, SPRITES.FENCE, 1.5), addSprite(920, SPRITES.FENCE, 2.5), addSprite(920, SPRITES.FENCE, 3.5), 
+    addSprite(925, SPRITES.ROSEBUSH, 1.65), addSprite(930, SPRITES.SUNFLOWERS, 2.3), 
+    addSprite(935, SPRITES.ROSEBUSH, 1.2), addSprite(940, SPRITES.FARMHOUSE, 2), addSprite(955, SPRITES.SUNFLOWERS, 2), 
+    addSprite(957, SPRITES.ROSEBUSH, 1.2), addSprite(960, SPRITES.OLIVETREE, 1.5), addSprite(970, SPRITES.OLIVETREE, 1.2), 
+    addSprite(975, SPRITES.FENCE, 1.5), addSprite(975, SPRITES.FENCE, 2.5), addSprite(975, SPRITES.FENCE, 3.5), 
+    n = 900; 1220 > n; n += 2) addSprite(n, SPRITES.CYPRESS, -1 - 1 * Math.random());
+    for (n = 975; 1220 > n; n += 2) addSprite(n, SPRITES.CYPRESS, 1 + 1 * Math.random());
 }
 
 function resetCars() {
@@ -1231,7 +1246,7 @@ var Game = {
         imageW > sourceW && ctx.drawImage(background, layer.x, sourceY, imageW - sourceW, sourceH, destW - 1, destY, width - destW, destH);
     },
     sprite: function(ctx, width, height, resolution, roadWidth, sprites, sprite, scale, destX, destY, offsetX, offsetY, clipY) {
-        var destW = sprite.w * scale * width / 2 * (SPRITES.SCALE * roadWidth), destH = sprite.h * scale * width / 2 * (SPRITES.SCALE * roadWidth);
+        if (sprite == SPRITES.FIAT500 || sprite == SPRITES.JEEP || sprite == SPRITES.DUCADO) var destW = sprite.w * scale * width / 2 * (SPRITES.SCALE / 2 * roadWidth), destH = sprite.h * scale * width / 2 * (SPRITES.SCALE / 2 * roadWidth); else var destW = sprite.w * scale * width / 2 * (SPRITES.SCALE * roadWidth), destH = sprite.h * scale * width / 2 * (SPRITES.SCALE * roadWidth);
         destX += destW * (offsetX || 0), destY += destH * (offsetY || 0);
         var clipH = clipY ? Math.max(0, destY + destH - clipY) : 0;
         destH > clipH && ctx.drawImage(sprites, sprite.x, sprite.y, sprite.w, sprite.h - sprite.h * clipH / destH, destX, destY, destW, destH - clipH);
@@ -1306,217 +1321,121 @@ var Game = {
         h: 480
     }
 }, SPRITES = {
-    PALM_TREE: {
+    CYPRESS: {
+        x: 832,
+        y: 5,
+        w: 164,
+        h: 700
+    },
+    STONEPINE: {
+        x: 1832,
+        y: 5,
+        w: 796,
+        h: 750
+    },
+    OLIVETREE: {
+        x: 958,
+        y: 715,
+        w: 864,
+        h: 850
+    },
+    SUNFLOWERS: {
+        x: 1832,
+        y: 765,
+        w: 128,
+        h: 105
+    },
+    ROSEBUSH: {
+        x: 1274,
+        y: 305,
+        w: 193,
+        h: 130
+    },
+    FARMHOUSE: {
         x: 5,
+        y: 715,
+        w: 943,
+        h: 600
+    },
+    FENCE: {
+        x: 1006,
         y: 5,
-        w: 215,
-        h: 540
-    },
-    BILLBOARD08: {
-        x: 230,
-        y: 5,
-        w: 385,
-        h: 265
-    },
-    TREE1: {
-        x: 625,
-        y: 5,
-        w: 360,
-        h: 360
-    },
-    DEAD_TREE1: {
-        x: 5,
-        y: 555,
-        w: 135,
-        h: 332
-    },
-    BILLBOARD09: {
-        x: 150,
-        y: 555,
-        w: 328,
-        h: 282
-    },
-    BOULDER3: {
-        x: 230,
-        y: 280,
-        w: 320,
-        h: 220
-    },
-    COLUMN: {
-        x: 995,
-        y: 5,
-        w: 200,
-        h: 315
-    },
-    BILLBOARD01: {
-        x: 625,
-        y: 375,
-        w: 300,
-        h: 170
-    },
-    BILLBOARD06: {
-        x: 488,
-        y: 555,
-        w: 298,
-        h: 190
-    },
-    BILLBOARD05: {
-        x: 5,
-        y: 897,
-        w: 298,
-        h: 190
-    },
-    BILLBOARD07: {
-        x: 313,
-        y: 897,
-        w: 298,
-        h: 190
-    },
-    BOULDER2: {
-        x: 621,
-        y: 897,
-        w: 298,
+        w: 314,
         h: 140
     },
-    TREE2: {
-        x: 1205,
+    BILLBOARDABARTH: {
+        x: 5,
         y: 5,
-        w: 282,
-        h: 295
+        w: 452,
+        h: 300
     },
-    BILLBOARD04: {
-        x: 1205,
-        y: 310,
-        w: 268,
-        h: 170
+    BILLBOARDFIAT: {
+        x: 467,
+        y: 5,
+        w: 355,
+        h: 300
     },
-    DEAD_TREE2: {
-        x: 1205,
-        y: 490,
-        w: 150,
-        h: 260
-    },
-    BOULDER1: {
-        x: 1205,
-        y: 760,
-        w: 168,
-        h: 248
-    },
-    BUSH1: {
-        x: 5,
-        y: 1097,
-        w: 240,
-        h: 155
-    },
-    CACTUS: {
-        x: 929,
-        y: 897,
-        w: 235,
-        h: 118
-    },
-    BUSH2: {
-        x: 255,
-        y: 1097,
-        w: 232,
-        h: 152
-    },
-    BILLBOARD03: {
-        x: 5,
-        y: 1262,
-        w: 230,
-        h: 220
-    },
-    BILLBOARD02: {
-        x: 245,
-        y: 1262,
-        w: 215,
-        h: 220
-    },
-    STUMP: {
-        x: 995,
-        y: 330,
+    FIAT500: {
+        x: 1330,
+        y: 5,
         w: 195,
-        h: 140
+        h: 183
     },
-    SEMI: {
-        x: 1365,
-        y: 490,
-        w: 122,
-        h: 144
+    JEEP: {
+        x: 1006,
+        y: 305,
+        w: 258,
+        h: 250
     },
-    TRUCK: {
-        x: 1365,
-        y: 644,
-        w: 100,
-        h: 78
-    },
-    CAR03: {
-        x: 1383,
-        y: 760,
-        w: 88,
-        h: 55
-    },
-    CAR02: {
-        x: 1383,
-        y: 825,
-        w: 80,
-        h: 59
-    },
-    CAR04: {
-        x: 1383,
-        y: 894,
-        w: 80,
-        h: 57
-    },
-    CAR01: {
-        x: 1205,
-        y: 1018,
-        w: 80,
-        h: 56
+    DUCADO: {
+        x: 1535,
+        y: 5,
+        w: 246,
+        h: 290
     },
     PLAYER_UPHILL_LEFT: {
-        x: 1383,
-        y: 961,
-        w: 80,
-        h: 45
+        x: 1832,
+        y: 1071,
+        w: 422,
+        h: 323
     },
     PLAYER_UPHILL_STRAIGHT: {
-        x: 1295,
-        y: 1018,
-        w: 80,
-        h: 45
+        x: 5,
+        y: 1710,
+        w: 414,
+        h: 323
     },
     PLAYER_UPHILL_RIGHT: {
-        x: 1385,
-        y: 1018,
-        w: 80,
-        h: 45
+        x: 443,
+        y: 1404,
+        w: 421,
+        h: 323
     },
     PLAYER_LEFT: {
-        x: 995,
-        y: 480,
-        w: 80,
-        h: 41
+        x: 1970,
+        y: 765,
+        w: 430,
+        h: 296
     },
     PLAYER_STRAIGHT: {
-        x: 1085,
-        y: 480,
-        w: 80,
-        h: 41
+        x: 1832,
+        y: 1404,
+        w: 411,
+        h: 296
     },
     PLAYER_RIGHT: {
-        x: 995,
-        y: 531,
-        w: 80,
-        h: 41
+        x: 5,
+        y: 1404,
+        w: 428,
+        h: 296
     }
 };
 
-SPRITES.SCALE = .3 * (1 / SPRITES.PLAYER_STRAIGHT.w), SPRITES.BILLBOARDS = [ SPRITES.BILLBOARD01, SPRITES.BILLBOARD02, SPRITES.BILLBOARD03, SPRITES.BILLBOARD04, SPRITES.BILLBOARD05, SPRITES.BILLBOARD06, SPRITES.BILLBOARD07, SPRITES.BILLBOARD08, SPRITES.BILLBOARD09 ], 
-SPRITES.PLANTS = [ SPRITES.TREE1, SPRITES.TREE2, SPRITES.DEAD_TREE1, SPRITES.DEAD_TREE2, SPRITES.PALM_TREE, SPRITES.BUSH1, SPRITES.BUSH2, SPRITES.CACTUS, SPRITES.STUMP, SPRITES.BOULDER1, SPRITES.BOULDER2, SPRITES.BOULDER3 ], 
-SPRITES.CARS = [ SPRITES.CAR01, SPRITES.CAR02, SPRITES.CAR03, SPRITES.CAR04, SPRITES.SEMI, SPRITES.TRUCK ];
+SPRITES.SCALE = 1.2 * (1 / SPRITES.PLAYER_STRAIGHT.w), SPRITES.BILLBOARDS = [ SPRITES.BILLBOARDABARTH, SPRITES.BILLBOARDFIAT ], 
+SPRITES.PLANTS = [ SPRITES.CYPRESS, SPRITES.STONEPINE, SPRITES.OLIVETREE, SPRITES.SUNFLOWERS, SPRITES.ROSEBUSH ], 
+SPRITES.STRUCTURES = [ SPRITES.FARMHOUSE, SPRITES.FENCE ], SPRITES.CARS = [ SPRITES.FIAT500, SPRITES.JEEP, SPRITES.DUCADO ];
 
-var playerInput = !1, $canvasElement = $("#canvas"), currentLap = 1, maxLaps = 3, lapStarted = !1, minLapSegment = 200, $lap1 = $("#hud-lap-1"), $lap2 = $("#hud-lap-2"), $lap3 = $("#hud-lap-3"), fps = 60, step = 1 / fps, width = 970, height = 500, centrifugal = .3, offRoadDecel = .99, skySpeed = .001, hillSpeed = .002, treeSpeed = .003, skyOffset = 0, hillOffset = 0, treeOffset = 0, segments = [], cars = [], stats = Game.stats("fps"), canvas = Dom.get("canvas"), ctx = canvas.getContext("2d"), background = null, sprites = null, resolution = null, roadWidth = 2e3, segmentLength = 200, rumbleLength = 3, trackLength = null, lanes = 3, fieldOfView = 100, cameraHeight = 1e3, cameraDepth = null, drawDistance = 300, playerX = 0, playerZ = null, fogDensity = 5, position = 0, speed = 0, maxSpeed = segmentLength / step, accel = maxSpeed / 10, breaking = -maxSpeed, decel = -maxSpeed / 5, offRoadDecel = -maxSpeed / 1.5, offRoadLimit = maxSpeed / 4, totalCars = 10, currentLapTime = 0, lastLapTime = null, keyLeft = !1, keyRight = !1, keyFaster = !1, keySlower = !1, offRoadMinSpeed = maxSpeed / 10, turnSpeed = 0, motionControllerOutputValue = 0, hud = {
+var playerInput = !1, $canvasElement = $("#canvas"), currentLap = 1, maxLaps = 3, lapStarted = !1, minLapSegment = 200, $lap1 = $("#hud-lap-1"), $lap2 = $("#hud-lap-2"), $lap3 = $("#hud-lap-3"), fps = 60, step = 1 / fps, width = 970, height = 500, centrifugal = .3, offRoadDecel = .99, skySpeed = .001, hillSpeed = .002, treeSpeed = .003, skyOffset = 0, hillOffset = 0, treeOffset = 0, segments = [], cars = [], stats = Game.stats("fps"), canvas = Dom.get("canvas"), ctx = canvas.getContext("2d"), background = null, sprites = null, resolution = null, roadWidth = 2e3, segmentLength = 200, rumbleLength = 3, trackLength = null, lanes = 3, fieldOfView = 100, cameraHeight = 1e3, cameraDepth = null, drawDistance = 300, playerX = 0, playerZ = null, fogDensity = 5, position = 0, speed = 0, maxSpeed = segmentLength / step, accel = maxSpeed / 10, breaking = -maxSpeed, decel = -maxSpeed / 5, offRoadDecel = -maxSpeed / 1.5, offRoadLimit = maxSpeed / 4, totalCars = 5, currentLapTime = 0, lastLapTime = null, keyLeft = !1, keyRight = !1, keyFaster = !1, keySlower = !1, offRoadMinSpeed = maxSpeed / 10, turnSpeed = 0, motionControllerOutputValue = 0, hud = {
     speed: {
         value: null,
         dom: Dom.get("speed_value")

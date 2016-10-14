@@ -289,11 +289,11 @@
   -o-transition: 0.5s;
   -webkit-transition: 0.5s;
   transition: 0.5s;
-  -moz-transform: scale(1.34);
-  -o-transform: scale(1.34);
-  -ms-transform: scale(1.34);
-  -webkit-transform: scale(1.34);
-  transform: scale(1.34); }
+  -moz-transform: scale(1);
+  -o-transform: scale(1);
+  -ms-transform: scale(1);
+  -webkit-transform: scale(1);
+  transform: scale(1); }
 
 #view-instructions {
   background: rgba(0, 0, 0, 0.7); }
