@@ -67,11 +67,11 @@
     #ctaClose_dc:hover b {
       border: 1px solid lightgrey; }
 
-#ytClose_dc {
-  position: absolute;
-  top: 0px !important;
-  left: 896px !important; }
-
+/* #ytClose_dc {
+	position: absolute;
+	top: 0px !important;
+	left: 896px !important;
+} */
 * {
   -moz-user-select: -moz-none;
   -ms-user-select: none;
