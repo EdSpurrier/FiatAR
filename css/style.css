@@ -110,7 +110,7 @@
 #view-instructions, #ready, .instructions, #race-starter-bg {
   z-index: 22; }
 
-#ready-1, #ready-2, #ready-3, #go, #nice-driving {
+#ready-1, #ready-2, #ready-3, #go, #nice-driving, .tick-circle, .tick-tick {
   z-index: 23; }
 
 #inputVideo, #motion-track-overlay, #outputVideo {
@@ -305,7 +305,14 @@
     left: 0;
     width: 100%;
     height: 100%; }
-  #view-instructions #move-right-text, #view-instructions #move-left-text {
+  #view-instructions .tick-circle, #view-instructions .tick-tick {
+    position: absolute;
+    top: 107px;
+    left: 50%;
+    margin-left: -80px;
+    width: 160px;
+    opacity: 0; }
+  #view-instructions #move-right-text, #view-instructions #move-left-text, #view-instructions .move-body {
     position: absolute;
     top: 140px;
     left: 50%;
@@ -378,7 +385,8 @@
 #view-end-game #end-game-cta {
   top: 155px;
   left: 50%;
-  margin-left: -93px; }
+  margin-left: -93px;
+  cursor: pointer; }
 #view-end-game #end-game-restart {
   bottom: 10px;
   left: 10px;
