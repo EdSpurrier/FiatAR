@@ -307,14 +307,22 @@
     height: 100%; }
   #view-instructions .tick-circle, #view-instructions .tick-tick {
     position: absolute;
-    top: 107px;
+    top: 145px;
     left: 50%;
-    margin-left: -80px;
-    width: 160px;
+    margin-left: -70px;
+    width: 140px;
     opacity: 0; }
-  #view-instructions #move-right-text, #view-instructions #move-left-text, #view-instructions .move-body {
+  #view-instructions #move-right-text, #view-instructions #move-left-text {
     position: absolute;
-    top: 140px;
+    top: 128px;
+    left: 50%; }
+  #view-instructions #move-right-text {
+    margin-left: -158px; }
+  #view-instructions #move-left-text {
+    margin-left: -146px; }
+  #view-instructions #move-right-head, #view-instructions #move-left-head, #view-instructions .move-body {
+    position: absolute;
+    top: 168px;
     left: 50%;
     margin-left: -43px; }
   #view-instructions #how-to-play {
@@ -353,13 +361,31 @@
     position: absolute;
     left: 50%;
     margin-left: 85px; }
-  #view-instructions #keyboard-controls {
+  #view-instructions #cta-ready-keyboard, #view-instructions #cta-ready-camera {
+    position: absolute;
+    left: 50%;
+    margin-left: -77px;
+    cursor: pointer; }
+  #view-instructions .cta-skip-tutorial {
+    position: absolute;
+    bottom: 7px;
+    left: 50%;
+    margin-left: -55px;
+    cursor: pointer; }
+  #view-instructions #cta-ready-camera {
+    top: 244px; }
+  #view-instructions #cta-ready-keyboard {
+    top: 257px; }
+  #view-instructions #also-keyboard-controls {
     position: absolute;
     top: 128px;
     left: 50%;
     margin-left: -156px; }
-  #view-instructions #how-to-play-keyboard {
-    cursor: pointer; }
+  #view-instructions #keyboard-controls {
+    position: absolute;
+    top: 128px;
+    left: 50%;
+    margin-left: -206px; }
   #view-instructions #allow-camera-text {
     position: absolute;
     top: 128px;
@@ -367,7 +393,7 @@
     margin-left: -122px; }
   #view-instructions .car {
     position: absolute;
-    top: 315px;
+    top: 300px;
     left: 50%;
     filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=0);
     opacity: 0; }
