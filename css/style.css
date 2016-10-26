@@ -381,7 +381,7 @@
   #view-instructions #cta-ready-camera {
     top: 244px; }
   #view-instructions #cta-ready-keyboard {
-    top: 257px; }
+    top: 251px; }
   #view-instructions #also-keyboard-controls {
     position: absolute;
     top: 128px;
@@ -404,9 +404,11 @@
     filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=0);
     opacity: 0; }
   #view-instructions #car-straight {
-    margin-left: -130px; }
+    margin-left: -115px;
+    width: 230px; }
   #view-instructions #car-left, #view-instructions #car-right {
-    margin-left: -184px; }
+    margin-left: -120px;
+    width: 240px; }
 
 #view-end-game .end-game-asset {
   position: absolute; }
