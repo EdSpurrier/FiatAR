@@ -176,6 +176,12 @@
   height: 498px;
   top: 0;
   left: 0; }
+  #game-hud #gold, #game-hud #silver, #game-hud #bronze {
+    position: absolute;
+    left: 50%;
+    width: 80px;
+    margin-left: -40px;
+    top: 80px; }
   #game-hud .hud-item, #game-hud .race-starter, #game-hud #race-starter-bg, #game-hud .hud-lap, #game-hud #nice-driving {
     position: absolute; }
   #game-hud .hud-lap {
@@ -204,7 +210,7 @@
     #game-hud .race-starter#go {
       margin-left: -95px; }
   #game-hud #nice-driving {
-    top: 135px;
+    top: 213px;
     left: 50%;
     margin-left: -173px; }
   #game-hud #race-starter-bg {
