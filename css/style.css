@@ -203,12 +203,15 @@
     cursor: pointer; }
   #game-hud #hud-lap-time {
     position: absolute;
-    top: 103px;
-    left: 10px;
+    top: 101px;
+    left: 0px;
+    width: 90px;
     color: white;
     font-size: 26px;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-weight: bold; }
+    font-weight: bold;
+    background: rgba(0, 0, 0, 0.3);
+    padding-left: 9px; }
   #game-hud .race-starter {
     top: 112px;
     left: 50%;
