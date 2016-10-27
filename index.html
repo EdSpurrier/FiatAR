@@ -28,7 +28,7 @@
 		<div id="expanded-panel">
 			<img class="top-gradient" src="images/top-gradient.png" alt="gradient"/>
 
-			<div id="ctaClose_dc"><b>X</b> <span>Minimise Ad</span></div>
+			<div id="ctaClose_dc"><b>X</b> <span>Close Expanded</span></div>
 
 			<div id='fps'></div>
 
@@ -42,8 +42,7 @@
 				</div>
 
 				<div id="move-right" class="instructions">
-					<img class="tick-tick" src="images/tick-tick.png" alt="Tick Tick"/>
-					<img class="tick-circle" src="images/tick-circle.png" alt="Tick Circle"/>
+					<img id="move-right-complete" class="move-complete" src="images/body-complete-right.png" alt="Complete"/>
 					<img id="move-right-text" src="images/move-right-text.png" alt="Move Right"/>
 					<img id="move-right-head" src="images/move-right.png" alt="Move Right"/>
 					<img class="move-body" src="images/move-body.png" alt="Move Body"/>
@@ -51,8 +50,7 @@
 				</div>
 
 				<div id="move-left" class="instructions">
-					<img class="tick-tick" src="images/tick-tick.png" alt="Tick Tick"/>
-					<img class="tick-circle" src="images/tick-circle.png" alt="Tick Circle"/>
+					<img id="move-left-complete" class="move-complete" src="images/body-complete-left.png" alt="Complete"/>
 					<img id="move-left-text" src="images/move-left-text.png" alt="Move Left"/>
 					<img id="move-left-head" src="images/move-left.png" alt="Move Left"/>
 					<img class="move-body" src="images/move-body.png" alt="Move Body"/>
@@ -92,6 +90,7 @@
 					<img id="hud-lap-1" class="hud-lap" src="images/hud-lap-1.png" alt="Lap 1"/>
 					<img id="hud-lap-2" class="hud-lap" src="images/hud-lap-2.png" alt="Lap 2"/>
 					<img id="hud-lap-3" class="hud-lap" src="images/hud-lap-3.png" alt="Lap 3"/>
+					<div id="hud-lap-time" class="hud-lap"></div>
 
 					<img id="gold" src="images/gold.png" alt="gold">
 					<img id="silver" src="images/silver.png" alt="silver">
@@ -133,10 +132,12 @@
 		<video id="outputVideo" autoplay="" loop="" width="160" height="120" src=""></video>
 		<canvas id="motion-track-overlay" width="160" height="120"></canvas>
 
+
+		<ci-ytclosebutton lang="en" theme="gray" shadow="false" id="ytClose_dc">
+		</ci-ytclosebutton>
+
 	</div>
 
-	<ci-ytclosebutton lang="en" theme="gray" shadow="false" id="ytClose_dc">
-	</ci-ytclosebutton>
 
 	<script src="js/siteCore.js"></script>
 
