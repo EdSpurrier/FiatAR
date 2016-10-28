@@ -211,7 +211,6 @@
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-weight: bold;
     background: rgba(0, 0, 0, 0.3);
-    padding-left: 9px;
     padding-left: 9px; }
   #game-hud .race-starter {
     top: 112px;
@@ -392,7 +391,7 @@
   #view-instructions #cta-ready-camera {
     top: 244px; }
   #view-instructions #cta-ready-keyboard {
-    top: 255px; }
+    top: 251px; }
   #view-instructions #also-keyboard-controls {
     position: absolute;
     top: 128px;
@@ -400,9 +399,9 @@
     margin-left: -156px; }
   #view-instructions #keyboard-controls {
     position: absolute;
-    top: 121px;
+    top: 128px;
     left: 50%;
-    margin-left: -174px; }
+    margin-left: -206px; }
   #view-instructions #allow-camera-text {
     position: absolute;
     top: 128px;
