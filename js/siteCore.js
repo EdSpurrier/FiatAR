@@ -58,7 +58,7 @@ var source;var songLength;
 // Then we put the buffer into the source
 function getEngineBufferData(){source=audioCtx.createBufferSource();source.type="audio/mpeg";request=new XMLHttpRequest;
 //request.open('GET', 'audio/car-run.mp3', true);
-request.open("GET","audio/car-run."+fileFormat,true);request.responseType="arraybuffer";request.onload=function(){var audioData=request.response;audioCtx.decodeAudioData(audioData,function(buffer){myBuffer=buffer;songLength=buffer.duration;source.buffer=myBuffer;source.playbackRate.value=carSpeedAudioRate;source.connect(audioCtx.destination);source.loop=true;
+request.open("GET","audio/car-run."+fileFormat,true);request.responseType="arraybuffer";request.onload=function(){var audioData=request.response;console.log("loaded audio");audioCtx.decodeAudioData(audioData,function(buffer){myBuffer=buffer;songLength=buffer.duration;source.buffer=myBuffer;source.playbackRate.value=carSpeedAudioRate;source.connect(audioCtx.destination);source.loop=true;
 //loopstartControl.setAttribute('max', Math.floor(songLength));
 //loopendControl.setAttribute('max', Math.floor(songLength));
 source.loop=true;source.loopStart=carRunStartLoop;source.loopEnd=carRunEndLoop},function(e){"Error with decoding audio data"+e.err})};request.send()}
