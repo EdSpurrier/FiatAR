@@ -106,7 +106,7 @@
 .hud-item {
   z-index: 21; }
 
-#view-instructions, #ready, .instructions, #race-starter-bg {
+#view-instructions, #ready, .instructions {
   z-index: 22; }
 
 #ready-1, #ready-2, #ready-3, #go, #nice-driving, .move-complete {
@@ -184,7 +184,7 @@
     left: 50%;
     margin-left: -90px;
     top: 110px; }
-  #game-hud .hud-item, #game-hud .race-starter, #game-hud #race-starter-bg, #game-hud .hud-lap, #game-hud #nice-driving {
+  #game-hud .hud-item, #game-hud .race-starter, #game-hud .hud-lap, #game-hud #nice-driving {
     position: absolute; }
   #game-hud .hud-lap {
     top: 40px;
