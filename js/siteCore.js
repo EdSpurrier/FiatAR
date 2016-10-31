@@ -65,7 +65,11 @@ source.loop=true;source.loopStart=carRunStartLoop;source.loopEnd=carRunEndLoop},
 // create empty buffer and play it
 var buffer=audioCtx.createBuffer(1,1,22050);source=audioCtx.createBufferSource();source.buffer=buffer;source.connect(audioCtx.destination);source.noteOn(0);
 // by checking the play state after some time, we know if we're really unlocked
-setTimeout(function(){if(source.playbackState===source.PLAYING_STATE||source.playbackState===source.FINISHED_STATE){isUnlocked=true;console.log("audio unlocked")}},0)}unlock();getEngineBufferData();
+setTimeout(function(){if(source.playbackState===source.PLAYING_STATE||source.playbackState===source.FINISHED_STATE){isUnlocked=true;console.log("audio unlocked")}},0)}unlock();var source2;
+// use XHR to load an audio track, and
+// decodeAudioData to decode it and stick it in a buffer.
+// Then we put the buffer into the source
+function getData(){source2=audioCtx.createBufferSource();var request=new XMLHttpRequest;request.open("GET","viper.ogg",true);request.responseType="arraybuffer";request.onload=function(){var audioData=request.response;audioCtx.decodeAudioData(audioData,function(buffer){source2.buffer=buffer;console.log("source 2 buffered");source2.connect(audioCtx.destination);source2.loop=true},function(e){"Error with decoding audio data"+e.err})};request.send()}getData();source2.start(0);source2.stop(0);getEngineBufferData();
 //source.start ? source.start(0) : source.noteOn(0);
 var gameSound={};gameSound.active=false;gameSound.runCar=function(){if(!soundMuted&&gameSound.active&&!soundNotSupported){getEngineBufferData();source.start?source.start(0):source.noteOn(0)}};gameSound.stopCar=function(){if(!soundNotSupported){source.stop?source.stop(0):source.noteOff(0)}};gameSound.play=function($sound){if(!soundMuted&&gameSound.active){$sound.pause();$sound.currentTime=0;$sound.play()}};gameSound.playForced=function($sound){$sound.pause();$sound.currentTime=0;$sound.play()};gameSound.startSounds=function(){gameSound.active=true;gameSound.runCar()};gameSound.stopSounds=function(){gameSound.active=false;gameSound.stopCar()};gameSound.muteSound=function($status){if($status=="toggle"){if(soundMuted){soundMuted=false}else{soundMuted=true}}else{soundMuted=$status}if(soundMuted){gameSound.stopCar()}else if(!soundMuted&&gameSound.active){gameSound.runCar()}};/**
  * @author mrdoob / http://mrdoob.com/
