@@ -185,7 +185,7 @@ var breaking=-maxSpeed;// deceleration rate when braking
 var decel=-maxSpeed/5;// 'natural' deceleration rate when neither accelerating, nor braking
 var offRoadDecel=-maxSpeed/1.5;// off road deceleration is somewhere in between
 var offRoadLimit=maxSpeed/4;// limit when off road deceleration no longer applies (e.g. you can always go at least this speed even when off road)
-var totalCars=7;// total number of cars on the road
+var totalCars=107;// total number of cars on the road
 var currentLapTime=0;// current lap time
 var lastLapTime=null;// last lap time
 // DEBUGING
@@ -979,7 +979,7 @@ var cacheEl=function(){$el.collapsed={};$el.collapsed.panel=$("#collapsed-panel"
 var setupCollapse=function(){$el.collapsed.panel.css({display:"block"});$el.expanded.panel.css({display:"none"});$el.collapsed.panel.css({opacity:0});$el.collapsed.tagLine.css({opacity:0});$el.collapsed.description.css({opacity:0});$el.collapsed.button.css({opacity:0});$el.abarthLogo.css({opacity:0});$el.motionControllerVideo.css({opacity:0})};
 //	SETUP
 //	SET UP ELEMENTS FOR EXPANDED PANEL IN
-var setupExpanded=function(){$el.collapsed.panel.css({display:"none"});$el.expanded.panel.css({display:"block",opacity:1});$el.expanded.gameHUDelements.css({display:"none",opacity:0});$el.expanded.gameHUD.css({opacity:0});$el.expanded.instructions.view.css({display:"block",opacity:1});$el.expanded.instructions.header.css({opacity:0});$el.expanded.instructions.instruction.css({display:"none",opacity:0});$el.expanded.instructions.cars.css({opacity:0});$el.expanded.gameHUDlapCounter.css({opacity:0});$el.expanded.gameHUDniceDriving.css({opacity:0});$el.expanded.gameHUDtime.css({opacity:0})};
+var setupExpanded=function(){$el.collapsed.panel.css({display:"none"});$el.expanded.panel.css({display:"block",opacity:1});$el.expanded.gameHUDelements.css({display:"none",opacity:0});$el.expanded.gameHUD.css({opacity:0});$el.expanded.instructions.view.css({display:"block",opacity:1});$el.expanded.instructions.header.css({opacity:0});$el.expanded.instructions.instruction.css({display:"none",opacity:0});$el.expanded.instructions.cars.css({opacity:0});$el.expanded.gameHUDlapCounter.css({opacity:0});$el.expanded.gameHUDniceDriving.css({opacity:0});$el.expanded.gameHUDtime.css({opacity:0});$el.expanded.instructions.rightComplete.css({opacity:0});$el.expanded.instructions.leftComplete.css({opacity:0})};
 //	SETUP
 //	SET UP ELEMENTS FOR GAME START
 var setupGame=function(){timeLineHeadLeft.stop();timeLineHeadRight.stop();motionInstructionsLeft=false;instructionsFinished=true;motionInstructionsActive=false;$el.expanded.instructions.carStraight.css({display:"none"});$el.expanded.instructions.carLeft.css({display:"none"});$el.expanded.instructions.carRight.css({display:"none"});$el.game.raceStarterBG.css({opacity:0});$el.game.allRaceStarter.css({opacity:0});$el.expanded.gameHUDniceDriving.css({opacity:0});$el.expanded.gameHUDmedals.css({opacity:0,display:"none"});$el.expanded.gameHUDlapCounter.css({opacity:0});$el.expanded.gameHUDtime.css({opacity:0});renderCar=true};
