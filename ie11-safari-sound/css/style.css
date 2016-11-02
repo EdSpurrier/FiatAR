@@ -188,7 +188,7 @@
     position: absolute; }
   #game-hud .hud-lap {
     top: 40px;
-    left: 0px; }
+    left: -190px; }
   #game-hud #hud-restart {
     left: 5px;
     top: 74px;
@@ -208,7 +208,7 @@
   #game-hud #hud-lap-time {
     position: absolute;
     top: 101px;
-    left: 0px;
+    left: -190px;
     width: 90px;
     color: white;
     font-size: 26px;
