@@ -188,7 +188,7 @@
     position: absolute; }
   #game-hud .hud-lap {
     top: 40px;
-    left: -190px; }
+    left: 0px; }
   #game-hud #hud-restart {
     left: 5px;
     top: 74px;
