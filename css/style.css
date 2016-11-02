@@ -371,13 +371,13 @@
     position: absolute;
     top: 128px;
     left: 50%;
-    margin-left: -200px; }
+    margin-left: -225px; }
   #view-instructions .options-cta {
     opacity: 0;
     -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
     filter: alpha(opacity=0);
     cursor: pointer;
-    top: 315px; }
+    top: 325px; }
   #view-instructions #resume {
     position: absolute;
     left: 50%;
@@ -414,7 +414,7 @@
     position: absolute;
     top: 121px;
     left: 50%;
-    margin-left: -174px; }
+    margin-left: -365px; }
   #view-instructions #allow-camera-text {
     position: absolute;
     top: 128px;
