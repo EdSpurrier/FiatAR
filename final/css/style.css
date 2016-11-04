@@ -6,7 +6,7 @@
   position: absolute;
   background-color: black;
   overflow: hidden;
-  border: 1px solid darkgrey; }
+  border: 1px solid black; }
 
 /* Collapsed Panel*/
 #collapsed-panel {
