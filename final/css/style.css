@@ -201,10 +201,14 @@
     left: 15px;
     bottom: 10px;
     cursor: pointer; }
-  #game-hud #hud-sound {
+  #game-hud .hud-sound {
     left: 48px;
     bottom: 12px;
     cursor: pointer; }
+  #game-hud .hud-sound-muted {
+    visibility: hidden; }
+  #game-hud .hud-sound-unmuted {
+    visibility: visible; }
   #game-hud #hud-lap-time {
     position: absolute;
     top: 101px;
